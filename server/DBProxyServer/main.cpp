@@ -5,6 +5,7 @@
 #include <ostream>
 #include <bthread/bthread.h>
 #include <butil/time/time.h>
+#include <bthread/bthread.h>
 
 class Logger : public ::logging::LogSink
 {
@@ -17,16 +18,19 @@ class Logger : public ::logging::LogSink
                       int line,
                       const butil::StringPiece &content)
     {
-        std::cout << content << "\n";
-        std::cout << file << "  :  " << line << "\n";
-        std::cout << bthread_self() << "\n";
-        butil::Time time = butil::Time::NowFromSystemTime();
-        time_t t = time.ToTimeT();
-        struct tm *pp = localtime(&t);
-        std::cout << pp->tm_year << "/" << pp->tm_mon << "/ " << pp->tm_mday
-                    << ": " << pp->tm_hour << "-" << pp->tm_min << "\n";
+        std::cout << content << ":" << this << "\n";
     }
 };
+
+void* func1(void *t) {
+    bthread_t id = bthread_self();
+    LOG(INFO) << "func1--" << id;
+}
+
+void* func2(void *t) {
+    bthread_t id = bthread_self();
+    LOG(INFO) << "func2--" << id;
+}
 
 int main() 
 {
@@ -37,9 +41,12 @@ int main()
         delete oldsink;
     }
 
-    std::ostringstream os;
+    bthread_t t1, t2;
+    bthread_start_background(&t1, nullptr, func1, nullptr);
+    bthread_start_background(&t2, nullptr, func2, nullptr);
 
-    LOG(INFO) << "nwuking" << "...";
+    bthread_join(t1, nullptr);
+    bthread_join(t2, nullptr);
     return 0;
 }
 
