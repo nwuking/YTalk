@@ -1,5 +1,5 @@
 /*================================================================================   
- *    Date:
+ *    Date: 2021-11-19
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
@@ -22,7 +22,10 @@ public:
     ~LogBuffer() {}
 
     void append(const char *msg, int len) {
-        //TODO
+        if((vaild() > len)) {
+            ::memcpy(_cur, msg, len);
+            _cur += len;
+        }
     }
 
     void bzero() {
@@ -31,6 +34,18 @@ public:
 
     int vaild() const {
         return static_cast<int>(end() - _cur);
+    }
+
+    int size() const {
+        return static_cast<int>(_cur - _data);
+    }
+
+    const char* data() const {
+        return _data;
+    }
+
+    void reset() {
+        _cur = _data;
     }
     //TODO
 

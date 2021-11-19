@@ -1,10 +1,11 @@
 /*================================================================================   
- *    Date:
+ *    Date: 2021-11-19
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
 
 #include "./AsyncLog.h"
+#include "./LogFile.h"
 
 #include <stdio.h>
 #include <assert.h>
@@ -19,6 +20,7 @@ AsyncLog::AsyncLog(const int &flush, const off_t &roll, const std::string &path)
       _working(false),
       _logThreadID(0),
       _mutex(),
+      _lock(_mutex, std::defer_lock),
       _cond(),
       _countDown(),
       _curBuffer(new Buffer),
@@ -27,7 +29,7 @@ AsyncLog::AsyncLog(const int &flush, const off_t &roll, const std::string &path)
 {
     _curBuffer->bzero();
     _nexBuffer->bzero();
-    _buffers.reserve(16);
+    _buffers.reserve(2);
 }
 
 AsyncLog::~AsyncLog() {
@@ -52,7 +54,7 @@ void AsyncLog::stop() {
 }
 
 void AsyncLog::append(const char *msg, int len) {
-    // thread safly
+   _lock.lock();
     if(_curBuffer->vaild() > len) {
         _curBuffer->append(msg, len);
     }
@@ -69,6 +71,7 @@ void AsyncLog::append(const char *msg, int len) {
         _curBuffer->append(msg, len);
         _cond.notify_one();
     }
+    _lock.unlock();
 }
 
 void* AsyncLog::asyncLogThread(void *objPtr) {
@@ -78,8 +81,61 @@ void* AsyncLog::asyncLogThread(void *objPtr) {
     AsyncLog *self = static_cast<AsyncLog*>(objPtr);
     assert(self->_working);
 
-    
-    //TODO
+    LogFile output(self->_flushInterval, self->_rollSize, self->_logFilePath);
+    BufferPtr newBuffer1(new Buffer);
+    BufferPtr newBuffer2(new Buffer);
+    newBuffer1->bzero();
+    newBuffer2->bzero();
+    BufferVec buffersToWrite;
+    buffersToWrite.reserve(2);
+
+    self->_countDown.signal();
+
+    while(self->_working) {
+        assert(newBuffer1 && newBuffer1->size() == 0);
+        assert(newBuffer2 && newBuffer2->size() == 0);
+        assert(buffersToWrite.empty());
+
+        self->_lock.lock();
+        if(self->_buffers.empty()) {
+            self->_cond.wait_for(self->_lock, self->_flushInterval);
+        }
+        self->_buffers.push_back(std::move(self->_curBuffer));
+        self->_curBuffer = std::move(newBuffer1);
+        buffersToWrite.swap(self->_buffers);
+        if(!self->_nexBuffer) {
+            self->_nexBuffer = std::move(newBuffer2);
+        }
+        self->_lock.unlock();
+
+        assert(!buffersToWrite.empty());
+
+        for(const auto &buffer : buffersToWrite) {
+            output.append(buffer->data(), buffer->size());
+        }
+
+        if(buffersToWrite.size() > 2) {
+            buffersToWrite.resize(2);
+        }
+
+        if(!newBuffer1) {
+            assert(!buffersToWrite.empty());
+            newBuffer1 = std::move(buffersToWrite.back());
+            buffersToWrite.pop_back();
+            newBuffer1->reset();            
+        }
+        if(!newBuffer2) {
+            assert(!buffersToWrite.empty());
+            newBuffer2 = std::move(buffersToWrite.back());
+            buffersToWrite.pop_back();
+            newBuffer2->reset();            
+        }
+
+        buffersToWrite.clear();
+        output.flush();
+    }
+
+    output.flush();
 }
 
 }    // namesapce YTalk

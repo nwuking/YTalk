@@ -1,5 +1,5 @@
 /*================================================================================   
- *    Date:
+ *    Date: 2021-11-18
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
@@ -55,6 +55,7 @@ private:
     //
     bthread_t _logThreadID;
     bthread_mutex_t _mutex;
+    std::unique_lock<bthread_mutex_t> _lock;
     bthread::ConditionVariable _cond;
     bthread::CountdownEvent _countDown;
 
