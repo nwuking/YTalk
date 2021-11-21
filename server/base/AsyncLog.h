@@ -22,11 +22,6 @@
 namespace YTalk
 {
 
-//some value by default
-static const int FLUSHINTERVAL = 3;    // s
-static const int ROLLSIZE = 8000;      // bytes
-static const char* LOGFILEPATH = "../data/logs/";    //
-
 class AsyncLog
 {
 public:

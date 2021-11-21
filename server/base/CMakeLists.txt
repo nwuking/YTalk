@@ -10,7 +10,7 @@ set(BASE_SOURCES
     AsyncLog.cpp 
     LogFile.cpp 
     Logging.cpp 
-    Time.cpp )
+    Time.cpp)
 
 set(BASE_INCLUDE ${PROJECT_SOURCE_DIR})
 
@@ -21,12 +21,16 @@ execute_process(
     COMMAND bash -c "find / -name thirdparty | grep YTalk"
     OUTPUT_VARIABLE THIRD_PARTY_INCLUDE
 )
-set(BRPC_INCLUDE ${THIRD_PARTY_INCLUDE}/brpc/include)
+#set(BRPC_INCLUDE ${THIRD_PARTY_INCLUDE}/brpc/include)
+
+set(BRPC_INCLUDE "/root/YTalk/thirdparty/brpc/include")
+
+message("${BRPC_INCLUDE}")
 
 #Generate the static library and the dynamic library
-add_library(base-static STATIC ${BASE_SOURCE})
-##add_library(base-shared SHARED ${BASE_SOURCE})
-target_include_directories(base-static ${BASE_INCLUDE} ${BRPC_INCLUDE})
+add_library(base-static STATIC ${BASE_SOURCES})
+##add_library(base-shared SHARED ${BASE_SOURCES})
+target_include_directories(base-static PUBLIC ${BASE_INCLUDE} ${BRPC_INCLUDE})
 ##target_include_directories(base-shared ${PROJECT_SOURCE_DIR})
 
 # rename

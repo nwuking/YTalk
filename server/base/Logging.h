@@ -13,12 +13,12 @@ namespace YTalk
 class Logger : public ::logging::LogSink
 {
 public:
-    static Logger* getInstance();
+    static Logger* getInstance(const char *config = nullptr);
 
     bool OnLogMessage(int serverity, const char *file, int line, const butil::StringPiece &content) override;
 
 private:
-    Logger() {}
+    Logger(const char *config = nullptr);
     ~Logger() {}
 
     butil::Lock _lock;

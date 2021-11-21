@@ -23,7 +23,12 @@ public:
 
     void parse(const std::string &path);
     void getValue(const std::string &key, std::string &value);
+    void getValue(const std::string &key, int &value);
+    void getValue(const std::string &key, long &value);
+    void getValue(const std::string &key, long long &value);
     void getValue(const std::string &key, std::vector<std::string> &value);
+    bool isExist(const std::string &key);
+    //TODO
 
 private:
     typedef std::string Key;

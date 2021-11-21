@@ -17,7 +17,23 @@ void ConfigParse::getValue(const std::string &key, std::string &value) {
     //TODO
 }
 
+void ConfigParse::getValue(const std::string &key, int &value) {
+    //TODO
+}
+
+void ConfigParse::getValue(const std::string &key, long &value) {
+    //TODO
+}
+
+void ConfigParse::getValue(const std::string &key, long long &value) {
+    //TODO
+}
+
 void ConfigParse::getValue(const std::string &key, std::vector<std::string> &value) {
+    //TODO
+}
+
+bool ConfigParse::isExist(const std::string &key) {
     //TODO
 }
 
