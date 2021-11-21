@@ -8,8 +8,9 @@
 #define YTALK_CONFIGPARSE_H
 
 #include <string>
-#include <unordered_map>
 #include <vector>
+
+#include <butil/containers/flat_map.h>    // brpc
 
 namespace YTalk
 {
@@ -28,7 +29,7 @@ private:
     typedef std::string Key;
     typedef std::vector<std::string> Value;
 
-    std::unordered_map<Key, Value> _confMap;
+    butil::FlatMap<Key, Value> _flatMap;
 
 };    // class ConfigParse
 
