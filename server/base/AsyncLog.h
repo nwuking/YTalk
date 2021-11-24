@@ -59,6 +59,8 @@ private:
     BufferPtr _nexBuffer;
     BufferVec _buffers;
 
+    bool _signal;
+
 };    // class AsyncLog
 
 }   // namesapce YTalk

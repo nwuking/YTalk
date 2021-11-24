@@ -10,7 +10,8 @@ set(BASE_SOURCES
     AsyncLog.cpp 
     LogFile.cpp 
     Logging.cpp 
-    Time.cpp)
+    Time.cpp 
+    ConfigParse.cpp )
 
 set(BASE_INCLUDE ${PROJECT_SOURCE_DIR})
 

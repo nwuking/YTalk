@@ -25,8 +25,10 @@ AsyncLog::AsyncLog(const int &flush, const off_t &roll, const std::string &path)
       _countDown(),
       _curBuffer(new Buffer),
       _nexBuffer(new Buffer),
-      _buffers()
+      _buffers(),
+      _signal(true)
 {
+    bthread_mutex_init(&_mutex, nullptr);
     _curBuffer->bzero();
     _nexBuffer->bzero();
     _buffers.reserve(2);
@@ -36,6 +38,7 @@ AsyncLog::~AsyncLog() {
     if(_working) {
         stop();
     }
+    bthread_mutex_destroy(&_mutex);
 }
 
 void AsyncLog::start() {
@@ -48,8 +51,13 @@ void AsyncLog::start() {
 }
 
 void AsyncLog::stop() {
+    // AsyncLog是伴随整个程序生命周期
+    // 在结束的时候挂起几秒钟
+    // 让AsyncLogThread能够把日志都写到磁盘
+    ::sleep(5);
     _working = false;
     _cond.notify_one();
+    //_working = false;
     bthread_join(_logThreadID, nullptr);
 }
 
@@ -59,6 +67,7 @@ void AsyncLog::append(const char *msg, int len) {
         _curBuffer->append(msg, len);
     }
     else {
+        //std::cout << "_next\n";
         _buffers.push_back(std::move(_curBuffer));
 
         if(_nexBuffer) {
@@ -90,7 +99,6 @@ void* AsyncLog::asyncLogThread(void *objPtr) {
     buffersToWrite.reserve(2);
 
     self->_countDown.signal();
-
     while(self->_working) {
         assert(newBuffer1 && newBuffer1->size() == 0);
         assert(newBuffer2 && newBuffer2->size() == 0);
@@ -134,7 +142,6 @@ void* AsyncLog::asyncLogThread(void *objPtr) {
         buffersToWrite.clear();
         output.flush();
     }
-
     output.flush();
 }
 

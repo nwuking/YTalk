@@ -23,7 +23,7 @@ public:
 
     void rollLogFile();
 
-    void changeLogFileName(int n);
+    void changeLogFileName();
     //TODO
 
 private:
@@ -38,6 +38,8 @@ private:
     int _logFileCount;
 
     time_t _lastFlush;
+
+    std::vector<std::string> logFileNames;
 
 };    // class LogFile
 

@@ -10,7 +10,7 @@
 #include "./ConfigParse.h"
 
 #include <bthread/bthread.h>    // brpc
-#include <butil/memory/singleton.h>    // brpc
+//#include <butil/memory/singleton.h>    // brpc
 
 #include <ostream>
 #include <vector>
@@ -34,7 +34,7 @@ static const int kFLUSHINTERVAL = 3;    // s
 static const int kROLLSIZE = 8000;      // bytes
 static const char* kLOGFILEPATH = "../data/logs/";    //
 
-static pthread_once_t g_pthread_once = PTHREAD_ONCE_INIT;
+//static pthread_once_t g_pthread_once = PTHREAD_ONCE_INIT;
 
 static std::unique_ptr<AsyncLog> g_AsyncLog;
 
@@ -55,11 +55,13 @@ Logger* Logger::getInstance(const char *config) {
 
 Logger::Logger(const char *config) {
     // read from config
+    std::cout << "start init Logger\n";
     int flush = kFLUSHINTERVAL;
     off_t rollSize = kROLLSIZE;
     std::string path = kLOGFILEPATH;
     if(config != nullptr) {
         // read from config
+        std::cout << "Logger --> parse log.conf\n";
         ConfigParse confP;
         confP.parse(config);
         if(confP.isExist(LOG_FLUSH_INTERVAL)) {
@@ -72,6 +74,7 @@ Logger::Logger(const char *config) {
             confP.getValue(LOG_FILE_PATH, path);
         }
     }
+    std::cout << "start init asyncLog\n";
     asyncLogInit(flush, rollSize, path);
 }
 
