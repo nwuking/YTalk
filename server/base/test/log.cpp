@@ -9,14 +9,17 @@ int main() {
 
     ::logging::LogSink *newSink = ::YTalk::Logger::getInstance(configPath.data());
     ::logging::LogSink *oldSink = ::logging::SetLogSink(newSink);
-    if(oldSink) {
-        delete oldSink;
-    }
 
-    for(int i = 0; i < 11; ++i) {
+    for(int i = 0; i < 2222; ++i) {
         LOG(INFO) << "i:" << i;
     }
 
-    //::sleep(5);
+    ::sleep(5);
+ std::cout << "end\n";
+    newSink = ::logging::SetLogSink(oldSink);
+    if(newSink) {
+        delete newSink;
+    }
+   //std::cout << "end\n";
     return 0;
 }

@@ -9,7 +9,7 @@
 
 //#include <butil/iobuf.h>    // brpc
 #include <bthread/bthread.h>    // brpc
-#include <bthread/condition_variable.h>    // brpc
+//#include <bthread/condition_variable.h>    // brpc
 #include <bthread/countdown_event.h>    // brpc
 
 #include <string>
@@ -18,6 +18,8 @@
 #include <atomic>
 
 #include "./LogBuffer.h"
+#include "./Mutex.h"
+#include "./Condition.h"
 
 namespace YTalk
 {
@@ -49,17 +51,19 @@ private:
 
     //
     bthread_t _logThreadID;
-    bthread_mutex_t _mutex;
-    std::unique_lock<bthread_mutex_t> _lock;
-    bthread::ConditionVariable _cond;
+    //bthread_mutex_t _mutex;
+    //bthread::Mutex _mutex;
+    //std::unique_lock<bthread::Mutex> _lock;
+    //std::unique_lock<bthread_mutex_t> _lock;
+    //bthread::ConditionVariable _cond;
+    Mutex _mutex;
+    Cond _cond;
     bthread::CountdownEvent _countDown;
 
     // buffer
     BufferPtr _curBuffer;
     BufferPtr _nexBuffer;
     BufferVec _buffers;
-
-    bool _signal;
 
 };    // class AsyncLog
 

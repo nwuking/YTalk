@@ -55,13 +55,11 @@ Logger* Logger::getInstance(const char *config) {
 
 Logger::Logger(const char *config) {
     // read from config
-    std::cout << "start init Logger\n";
     int flush = kFLUSHINTERVAL;
     off_t rollSize = kROLLSIZE;
     std::string path = kLOGFILEPATH;
     if(config != nullptr) {
         // read from config
-        std::cout << "Logger --> parse log.conf\n";
         ConfigParse confP;
         confP.parse(config);
         if(confP.isExist(LOG_FLUSH_INTERVAL)) {
@@ -74,7 +72,6 @@ Logger::Logger(const char *config) {
             confP.getValue(LOG_FILE_PATH, path);
         }
     }
-    std::cout << "start init asyncLog\n";
     asyncLogInit(flush, rollSize, path);
 }
 

@@ -39,7 +39,7 @@ private:
 
     time_t _lastFlush;
 
-    std::vector<std::string> logFileNames;
+    //static std::unordered_map<int, std::string> logFileNames;
 
 };    // class LogFile
 
