@@ -1,7 +1,21 @@
 #include "base/Logging.h"
 
+#include <bthread/bthread.h>
+
 #include <iostream>
 #include <string>
+
+void* func1(void *arg) {
+    for(int i = 0; i < 20000; ++i) {
+        LOG(INFO) << "func1: " << i;
+    }
+}
+
+void* func2(void *arg) {
+    for(int i = 0; i < 20000; ++i) {
+        LOG(INFO) << "func1: " << i;
+    }
+}
 
 int main() {
 
@@ -10,13 +24,18 @@ int main() {
     ::logging::LogSink *newSink = ::YTalk::Logger::getInstance(configPath.data());
     ::logging::LogSink *oldSink = ::logging::SetLogSink(newSink);
 
+   bthread_t t1, t2;
+   bthread_start_background(&t1, nullptr, func1, nullptr);
+   bthread_start_background(&t2, nullptr, func2, nullptr);
+
     for(int i = 0; i < 2222; ++i) {
         LOG(INFO) << "i:" << i;
     }
 
-    ::sleep(5);
- std::cout << "end\n";
-    newSink = ::logging::SetLogSink(oldSink);
+   bthread_join(t1, nullptr);
+   bthread_join(t2, nullptr);
+
+   newSink = ::logging::SetLogSink(oldSink);
     if(newSink) {
         delete newSink;
     }

@@ -1,52 +1,49 @@
-//#include <mysql/mysql.h>
+/*================================================================================   
+ *    Date: 
+ *    Author: nwuking
+ *    Email: nwuking@qq.com  
+================================================================================*/
+
+#include <brpc/server.h>
+#include <gflags/gflags.h>
+
+#include "base/Logging.h"
+#include "base/ConfigParse.h"
+#include "MySqlService.h"
+
 #include <iostream>
-//#include <gflags/gflags.h>
-#include <butil/logging.h>
-#include <ostream>
-#include <bthread/bthread.h>
-#include <butil/time/time.h>
-#include <bthread/bthread.h>
 
-class Logger : public ::logging::LogSink
+DEFINE_string(config, "./config.conf", "the config of the DBProxyServer");
+DEFINE_string(log_config_path, "log_config_path", "the key of log_config_path");
+DEFINE_string(ip, "ip", "ip address of server");
+DEFINE_string(port, "port", "port of server");
+
+int main(int argc, char *argv[])
 {
-    public:
-    Logger() = default;
-    ~Logger() = default;
+    //google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
+    signal(SIGPIPE, SIG_IGN);
 
-    bool OnLogMessage(int serverity,
-                      const char *file,
-                      int line,
-                      const butil::StringPiece &content)
-    {
-        std::cout << content << ":" << this << "\n";
-    }
-};
-
-void* func1(void *t) {
-    bthread_t id = bthread_self();
-    LOG(INFO) << "func1--" << id;
-}
-
-void* func2(void *t) {
-    bthread_t id = bthread_self();
-    LOG(INFO) << "func2--" << id;
-}
-
-int main() 
-{
-    //LOG_EVERY_SECOND(INFO) << "High-frequent logs";
-    ::logging::LogSink *logsink = new Logger();
-    ::logging::LogSink *oldsink = ::logging::SetLogSink(logsink);
-    if(oldsink) {
-        delete oldsink;
+    ::YTalk::ConfigParse confParse;
+    confParse.parse(FLAGS_config);
+    if(!confParse.status()) {
+        std::cout << "Faild to parse config, please check it!" << std::endl;
+        return -1;
     }
 
-    bthread_t t1, t2;
-    bthread_start_background(&t1, nullptr, func1, nullptr);
-    bthread_start_background(&t2, nullptr, func2, nullptr);
+    std::string logConfig;
+    confParse.getValue(FLAGS_log_config_path, logConfig);
+    ::logging::LogSink *newSink = ::YTalk::Logger::getInstance(logConfig.data());
+    ::logging::LogSink *oldSink = ::logging::SetLogSink(newSink);
+    if(oldSink) {
+        delete oldSink;
+    }
 
-    bthread_join(t1, nullptr);
-    bthread_join(t2, nullptr);
+    ::YTalk::MySqlServiceImpl mySqlService;
+    //TODO
+    
+    if(newSink) {
+        delete newSink;
+    }
     return 0;
 }
-

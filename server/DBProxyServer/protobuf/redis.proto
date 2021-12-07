@@ -1,0 +1,16 @@
+syntax = "proto2";
+package DBProxyServer;
+
+option cc_generic_services = true;
+
+message RedisRequest {
+    //TODO
+};
+
+message RedisResponse {
+    //TODO
+};
+
+service RedisService {
+    rpc request(RedisRequest) returns (RedisResponse);
+};

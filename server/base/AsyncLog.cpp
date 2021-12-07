@@ -63,7 +63,6 @@ void AsyncLog::stop() {
 void AsyncLog::append(const char *msg, int len) {
     MutexLock lock(_mutex);
     //_lock.lock();
-    std::cout << "nwuking" << "\n";
     if(_curBuffer->vaild() > len) {
         _curBuffer->append(msg, len);
         //_lock.unlock();

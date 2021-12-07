@@ -1,0 +1,20 @@
+syntax = "proto2";
+package DBProxyServer;
+
+option cc_generic_services = true;
+
+message MySqlRequest {
+    required string message = 1;
+    //TODO
+};
+
+message MySqlResponse {
+    required bool stauts = 1;
+    required string message = 2;
+    //TODO
+};
+
+service MySqlService {
+    rpc request(MySqlRequest) returns (MySqlResponse);
+};
+
