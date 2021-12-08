@@ -1,8 +1,11 @@
 /*================================================================================   
- *    Date: 
+ *    Date: 2021-12-08
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
+
+#include "base/Condition.h"
+#include "base/Mutex.h"
 
 #include <string>
 #include <list>
@@ -20,6 +23,29 @@ public:
     virtual ~MySqlPool();
 
     int init();
+
+    MySqlConn* getMySqlConn();
+
+    void retMySqlConn(MySqlConn *mySqlConn);
+
+    const char* getPoolName() {
+        return _pool_name.c_str();
+    }
+    const char* getDBHost() {
+        return _db_host.c_str();
+    }
+    uint16_t getDBPort() {
+        return _db_port;
+    }
+    const char* getDBUserName() {
+        return _db_username.c_str();
+    }
+    const char* getDBPassword() {
+        return _db_password.c_str();
+    }
+    const char* getDBName() {
+        return _db_name.c_str();
+    }
     //TODO
 private:
     std::string _pool_name;
@@ -31,6 +57,9 @@ private:
     int _db_maxconncnt;
     int _db_curconncnt;
     std::list<MySqlConn*> _free_list;
+
+    Mutex _mutex;
+    Cond _cond;
 };    // class MysqlPool
 
 }    // namespace YTalk

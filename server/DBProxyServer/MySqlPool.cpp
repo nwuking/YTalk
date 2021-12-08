@@ -1,5 +1,5 @@
 /*================================================================================   
- *    Date: 
+ *    Date: 2021-12-08
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
@@ -20,7 +20,9 @@ MySqlPool::MySqlPool(const std::string &pool_name, const std::string &db_host, u
       _db_username(db_username),
       _db_password(db_password),
       _db_name(db_name),
-      _db_maxconncnt(maxconncnt)
+      _db_maxconncnt(maxconncnt),
+      _mutex(),
+      _cond(_mutex)
 {
      _db_curconncnt = DB_MIN_CONN_CNT;
 }
@@ -49,5 +51,44 @@ int MySqlPool::init() {
     return 0;
 }
 
-    //TODO
+MySqlConn* MySqlPool::getMySqlConn() {
+    MutexLock lock(_mutex);
+    while(_free_list.empty()) {
+        if(_db_curconncnt >= _db_maxconncnt) {
+            _cond.wait();
+        }
+        else {
+            MySqlConn *newMySqlConn = new MySqlConn(this);
+            if(newMySqlConn->init()) {
+                LOG(INFO) << "Init MysqlConn failed";
+                delete newMySqlConn;
+                return nullptr;
+            }
+            _free_list.push_back(newMySqlConn);
+            _db_curconncnt++;
+            LOG(INFO) << "new MySqlConn: " << _pool_name << ", conn_cnt: " << _db_curconncnt;
+        }
+    }
+
+    MySqlConn *p = _free_list.front();
+    _free_list.pop_front();
+    return p;
+}
+
+void MySqlPool::retMySqlConn(MySqlConn *mySqlConn) {
+    MutexLock lock(_mutex);
+    std::list<MySqlConn*>::iterator it = _free_list.begin();
+    for(; it != _free_list.end(); ++it) {
+        if(*it == mySqlConn) {
+            break;
+        }
+    }
+
+    if(it == _free_list.end()) {
+        _free_list.push_back(mySqlConn);
+    }
+
+    _cond.notify();
+}
+//TODO
 }    //namesapce YTalk
