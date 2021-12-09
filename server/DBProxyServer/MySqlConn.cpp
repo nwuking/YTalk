@@ -18,7 +18,7 @@ MResultSet::MResultSet(MYSQL_RES *res) {
     int num_fields = mysql_num_fields(_res);     // 每一行的字段数
     MYSQL_FIELD *fields = mysql_fetch_fields(_res);
     for(int i = 0; i < num_fields; ++i) {
-        _key_map.insert(std::make_pair(fields[i].name(), i));
+        _key_map.insert(std::make_pair(fields[i].name, i));
     }
 }
 
@@ -110,6 +110,20 @@ MResultSet* MySqlConn::executeQuery(const char *query) {
 
     MResultSet *resultSet = new MResultSet(res);
     return resultSet;
+}
+
+bool MySqlConn::executeUpdate(const char *update) {
+    mysql_ping(_mysql);
+
+    if(mysql_real_query(_mysql, update, ::strlen(update))) {
+        LOG(INFO) << "mysql_real_query failed: " << mysql_error(_mysql) << ", sql: " << update;
+        return false;
+    }
+
+    if(mysql_affected_rows(_mysql) > 0) {
+        return true;
+    }
+    return false;
 }
 
 }    // namesapce YTalk

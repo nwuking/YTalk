@@ -21,7 +21,8 @@ int main() {
 
     std::string configPath = "./log.conf";
 
-    ::logging::LogSink *newSink = ::YTalk::Logger::getInstance(configPath.data());
+    //::logging::LogSink *newSink = ::YTalk::Logger::getInstance(configPath.data());
+    ::logging::LogSink *newSink = ::YTalk::Logger::getInstance();
     ::logging::LogSink *oldSink = ::logging::SetLogSink(newSink);
 
    bthread_t t1, t2;

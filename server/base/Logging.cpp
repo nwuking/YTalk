@@ -43,10 +43,16 @@ static void asyncLogInit(const int &flush, const off_t &roll, const std::string 
     g_AsyncLog->start();
 }
 
-void g_output(const std::string &log) {
+void async_output(const std::string &log) {
     //pthread_once(&g_pthread_once, asyncLogInit);
     g_AsyncLog->append(log.c_str(), log.size());
 }
+
+void default_output(const std::string &log) {
+    printf("%s\n", log.c_str());
+}
+
+Logger::OutputFunc g_output = default_output;
 
 Logger* Logger::getInstance(const char *config) {
     //return Singleton<Logger, LeakySingletonTraits<Logger> >::get();
@@ -71,8 +77,11 @@ Logger::Logger(const char *config) {
         if(confP.isExist(LOG_FILE_PATH)) {
             confP.getValue(LOG_FILE_PATH, path);
         }
+
+        asyncLogInit(flush, rollSize, path);
+        g_output = async_output;
     }
-    asyncLogInit(flush, rollSize, path);
+    //asyncLogInit(flush, rollSize, path);
 }
 
 bool Logger::OnLogMessage(int serverity, const char *file, int line, const butil::StringPiece &content) {

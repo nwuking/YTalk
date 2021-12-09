@@ -4,6 +4,9 @@
  *    Email: nwuking@qq.com  
 ================================================================================*/
 
+#ifndef YTALK_MYSQLPOOL_H
+#define YTALK_MYSQLPOOL_H
+
 #include "base/Condition.h"
 #include "base/Mutex.h"
 
@@ -63,3 +66,5 @@ private:
 };    // class MysqlPool
 
 }    // namespace YTalk
+
+#endif

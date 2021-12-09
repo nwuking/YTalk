@@ -47,7 +47,6 @@ void AsyncLog::start() {
         ::exit(-1);
     }
     _countDown.wait();
-    std::cout << "had init asynclog!\n";
 }
 
 void AsyncLog::stop() {

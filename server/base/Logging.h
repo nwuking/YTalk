@@ -4,6 +4,9 @@
  *    Email: nwuking@qq.com  
 ================================================================================*/
 
+#ifndef YTALK_LOGGING_H
+#define YTALK_LOGGING_H
+
 #include <butil/logging.h>    // brpc
 #include <butil/synchronization/lock.h>    // brpc
 
@@ -17,6 +20,8 @@ public:
 
     bool OnLogMessage(int serverity, const char *file, int line, const butil::StringPiece &content) override;
 
+    typedef void (*OutputFunc)(const std::string &log);
+
 private:
     Logger(const char *config = nullptr);
     ~Logger() {}
@@ -25,3 +30,5 @@ private:
 };    // class Logger
 
 }    // namespace YTalk
+
+#endif
