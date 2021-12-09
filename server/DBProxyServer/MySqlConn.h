@@ -37,7 +37,8 @@ public:
             return false;
         }
         for(; it != _key_map.end(); ++it) {
-            LOG(INFO) << "SQL RESULT: " << _row[it->second];
+            next();
+            LOG(INFO) << "data: " << _row[(*it).second];
         }
     }
     /// for test end

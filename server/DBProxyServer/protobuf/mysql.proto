@@ -15,6 +15,6 @@ message MySqlResponse {
 };
 
 service MySqlService {
-    rpc request(MySqlRequest) returns (MySqlResponse);
+    rpc Request(MySqlRequest) returns (MySqlResponse);
 };
 

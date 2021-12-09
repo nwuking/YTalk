@@ -22,11 +22,12 @@ MySqlServiceImpl::~MySqlServiceImpl() {
     }
 }
 
-void MySqlServiceImpl::request(::google::protobuf::RpcController* controller,
+void MySqlServiceImpl::Request(::google::protobuf::RpcController* controller,
                             const ::DBProxyServer::MySqlRequest* request,
                             ::DBProxyServer::MySqlResponse* response,
                             ::google::protobuf::Closure* done)
 {
+    LOG(INFO) << "FOR TEST";
     //TODO
 }
 

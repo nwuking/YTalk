@@ -29,7 +29,7 @@ public:
     MySqlServiceImpl() = default;
     virtual ~MySqlServiceImpl();
 
-    virtual void request(::google::protobuf::RpcController* controller,
+    virtual void Request(::google::protobuf::RpcController* controller,
                        const ::DBProxyServer::MySqlRequest* request,
                        ::DBProxyServer::MySqlResponse* response,
                        ::google::protobuf::Closure* done); 
@@ -58,6 +58,7 @@ public:
         if(it != _MysqlPool_map.end()) {
             MySqlConn *p = it->second->getMySqlConn();
             MResultSet *set = p->executeQuery(sql);
+
             if(set) {
                 if(!set->ergodic()) {
                     LOG(INFO) << "query no data";

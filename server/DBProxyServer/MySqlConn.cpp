@@ -89,6 +89,7 @@ int MySqlConn::init() {
                         _mySqlPool->getDBName(), _mySqlPool->getDBPort(), nullptr, 0))
     {
         LOG(INFO) << "mysql_real_connect failed: " << mysql_error(_mysql);
+        LOG(INFO) << "port: " << _mySqlPool->getDBPort();
         return 2;
     }
     return 0;

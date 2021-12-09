@@ -4,7 +4,8 @@ project(YTalk_DBProxy_Server)
 set(SOURCES 
     MySqlConn.cpp 
     MySqlPool.cpp 
-    MySqlService.cpp)
+    MySqlService.cpp 
+    protobuf/mysql.pb.cc )
 
 ## for *.a 
 set(STATIC_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/output/lib/)
@@ -12,7 +13,7 @@ set(STATIC_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/output/lib/)
 ## for include
 set(BASE_INCLUDE ${PROJECT_SOURCE_DIR}/../)
 set(DBPROXY_INCLUDE ${PROJECT_SOURCE_DIR}/)
-set(PROTO_INCLUDE ${PROJECT_SOURCE_DIR}/protobuf/)
+set(PROTO_INCLUDE ${PROJECT_SOURCE_DIR}/)
 set(BRPC_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/brpc/include/)
 set(MYSQL_INCLUDE /usr/include/)
 
@@ -31,7 +32,8 @@ target_include_directories(DBProxy-static
                     PUBLIC ${BASE_INCLUDE} 
                            ${DBPROXY_INCLUDE} 
                            ${MYSQL_INCLUDE} 
-                           ${BRPC_INCLUDE} )
+                           ${BRPC_INCLUDE} 
+                           ${PROTO_INCLUDE})
 set_target_properties(DBProxy-static PROPERTIES OUTPUT_NAME DBProxy CLEAN_DIRECT_OUTPUT 1)
 
 ## install static-lib
