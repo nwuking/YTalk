@@ -12,5 +12,5 @@ message RedisResponse {
 };
 
 service RedisService {
-    rpc request(RedisRequest) returns (RedisResponse);
+    rpc Request(RedisRequest) returns (RedisResponse);
 };
