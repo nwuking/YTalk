@@ -11,7 +11,7 @@
 
 #include <vector>
 
-#define CACHEINSTANCES_KEY "CacheInstances"
+#define CACHEINSTANCES_KEY "RedisInstances"
 
 namespace YTalk
 {
@@ -56,10 +56,10 @@ int RedisServiceImpl::init(const std::string &configFile) {
 }
 
 int RedisServiceImpl::init(ConfigParse *cParse) {
-    std::vector<std::string> cacheInstances;
-    cParse->getValue(CACHEINSTANCES_KEY, cacheInstances);
-    if(cacheInstances.empty()) {
-        LOG(INFO) << "not configure CacheInstances";
+    std::vector<std::string> redisInstances;
+    cParse->getValue(CACHEINSTANCES_KEY, redisInstances);
+    if(redisInstances.empty()) {
+        LOG(INFO) << "not configure RedisInstances";
         return 3;
     }
 
@@ -68,26 +68,26 @@ int RedisServiceImpl::init(ConfigParse *cParse) {
     char db[64];
     char maxconncnt[64];
 
-    for(auto &poolName : cacheInstances) {
+    for(auto &poolName : redisInstances) {
         snprintf(host, 64, "%s_host", poolName.c_str());
         snprintf(port, 64, "%s_port", poolName.c_str());
         snprintf(db, 64, "%s_db", poolName.c_str());
         snprintf(maxconncnt, 64, "%s_maxconncnt", poolName.c_str());
 
-        std::string cache_host, cache_port_str, cache_db_str, cache_maxconncnt_str;
+        std::string redis_host, redis_port_str, redis_db_str, redis_maxconncnt_str;
 
-        cParse->getValue(host, cache_host);
-        cParse->getValue(port, cache_port_str);
-        cParse->getValue(db, cache_db_str);
-        cParse->getValue(maxconncnt, cache_maxconncnt_str);
+        cParse->getValue(host, redis_host);
+        cParse->getValue(port, redis_port_str);
+        cParse->getValue(db, redis_db_str);
+        cParse->getValue(maxconncnt, redis_maxconncnt_str);
 
-        if(cache_host.empty() || cache_port_str.empty() || cache_db_str.empty() || cache_maxconncnt_str.empty()) {
-            LOG(ERROR) << "not configure cache instance: " << poolName;
+        if(redis_host.empty() || redis_port_str.empty() || redis_db_str.empty() || redis_maxconncnt_str.empty()) {
+            LOG(ERROR) << "not configure redis instance: " << poolName;
             return 4;
         }
 
-        RedisPool *redisPool = new RedisPool(poolName, cache_host, ::atoi(cache_port_str.c_str()),
-                                            ::atoi(cache_db_str.c_str()), ::atoi(cache_maxconncnt_str.c_str()));
+        RedisPool *redisPool = new RedisPool(poolName, redis_host, ::atoi(redis_port_str.c_str()),
+                                            ::atoi(redis_db_str.c_str()), ::atoi(redis_maxconncnt_str.c_str()));
 
         if(!redisPool || redisPool->init()) {
             LOG(ERROR) << "Faild to init RedisPool: " << poolName;

@@ -32,9 +32,7 @@ public:
     std::string setex(const char *key, const char *value, int timeout);
     bool mget(const std::vector<std::string> &keys, std::unordered_map<std::string, std::string> &retValue);
     bool isExits(const char *key);
-
-    /// hash type
-    std::string hget(const char *key, const char *field);
+    
     //TODO
 
 private:

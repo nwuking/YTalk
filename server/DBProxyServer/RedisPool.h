@@ -21,32 +21,35 @@ class RedisConn;
 class RedisPool
 {
 public:
-    RedisPool(const std::string &poolName, const std::string &cache_host, uint16_t cache_port, int cache_db, int cache_maxconncnt);
+    RedisPool(const std::string &poolName, const std::string &redis_host, uint16_t redis_port, int redis_db, int redis_maxconncnt);
     virtual ~RedisPool();
 
     int init();
 
-    const char* getCacheHost() {
-        return _cache_host.c_str();
+    RedisConn* getRedisConn();
+    void retRedisConn(RedisConn *redisConn);
+
+    const char* getRedisHost() {
+        return _redis_host.c_str();
     }
-    int getCachePort() {
-        return _cache_port;
+    int getRedisPort() {
+        return _redis_port;
     }
-    int getCacheDbNum() {
-        return _cache_db;
+    int getRedisDbNum() {
+        return _redis_db;
     }
-    int getCacheMaxConnCnt() {
-        return _cache_maxconncnt;
+    int getRedisMaxConnCnt() {
+        return _redis_maxconncnt;
     }
     //TODO
 
 private:
     std::string _pool_name;
-    std::string _cache_host;
-    int _cache_port;
-    int _cache_db;
-    int _cache_maxconncnt;
-    int _cache_curconncnt;
+    std::string _redis_host;
+    int _redis_port;
+    int _redis_db;
+    int _redis_maxconncnt;
+    int _redis_curconncnt;
     std::list<RedisConn*> _free_map;
     Mutex _mutex;
     Cond _cond;
