@@ -6,14 +6,28 @@
 
 #include "MySqlPool.h"
 #include "MySqlService.h"
+#include "MySqlConn.h"
 #include "base/ConfigParse.h"
 #include "base/Logging.h"
 
+#include <brpc/server.h>
+
 //const std::string DBINSTANCES_KEY = "dbInstances";
 #define DBINSTANCES_KEY "DBInstances"
+#define MYSQL_QUERY "query"
+#define MYSQL_UPDATE "update"
 
 namespace YTalk
 {
+
+enum status_code {
+    MYSQL_SUCCESS = 0,
+    MYSQL_DB_NOT_EXITS,
+    MYSQL_CONN_IS_NULLPTR,
+    MYSQL_UPDATE_SUCCESS,
+    MYSQL_UPDATE_FAIL,
+    MYSQL_OPTION_NOT_USE,
+};
 
 MySqlServiceImpl::~MySqlServiceImpl() {
     for(auto &p : _MysqlPool_map) {
@@ -27,8 +41,7 @@ void MySqlServiceImpl::Request(::google::protobuf::RpcController* controller,
                             ::DBProxyServer::MySqlResponse* response,
                             ::google::protobuf::Closure* done)
 {
-    LOG(INFO) << "FOR TEST";
-    //TODO
+    //////TODO
 }
 
 int MySqlServiceImpl::init(const std::string &configFile) {

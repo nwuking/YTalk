@@ -1,0 +1,4 @@
+syntax = "proto2";
+package = LoginServer;
+
+cc_generic_services = true;

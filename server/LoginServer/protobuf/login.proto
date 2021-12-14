@@ -1,0 +1,12 @@
+syntax = "proto2";
+package LoginServer;
+
+option cc_generic_services = true;
+
+message HttpRequest {};
+message HttpResponse {};
+
+service HttpService {
+    rpc Login(HttpRequest) returns (HttpResponse);
+    rpc Register(HttpRequest) returns (HttpResponse);
+};
