@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include <brpc/channel.h>
+
 namespace YTalk
 {
 
@@ -25,6 +27,8 @@ public:
 private:
     std::string _dbProxyServer_ip;
     std::string _dbProxyServer_port_str;
+
+    brpc::Channel _channel;
 };    // class AccessMySql
 
 }    // namesapce YTalk
