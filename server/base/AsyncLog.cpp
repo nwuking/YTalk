@@ -43,7 +43,7 @@ AsyncLog::~AsyncLog() {
 void AsyncLog::start() {
     _working = true;
     if(bthread_start_background(&_logThreadID, nullptr, asyncLogThread, this) != 0) {
-        ::fprintf(stderr, "Fail to create bthread  for log!");
+        ::fprintf(stdout, "Fail to create bthread  for log!");
         ::exit(-1);
     }
     _countDown.wait();

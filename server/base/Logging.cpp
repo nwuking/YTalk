@@ -49,7 +49,7 @@ void async_output(const std::string &log) {
 }
 
 void default_output(const std::string &log) {
-    printf("%s\n", log.c_str());
+    printf("%s", log.c_str());
 }
 
 Logger::OutputFunc g_output = default_output;

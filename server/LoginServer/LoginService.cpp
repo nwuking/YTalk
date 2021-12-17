@@ -27,6 +27,9 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
                        ::LoginServer::HttpResponse* response,
                        ::google::protobuf::Closure* done)
 {
+    // called by client
+    ::brpc::ClosureGuard done_guard(done);
+    ::brpc::Controller *cntl = static_cast<::brpc::Controller*>(controller);
     //TODO
 }
 

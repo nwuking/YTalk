@@ -4,9 +4,7 @@ package DBProxyServer;
 option cc_generic_services = true;
 
 message MySqlRequest {
-    required string dbname = 1;
-    required string option = 2;
-    optional string message = 3;
+    required string message = 1;
 };
 
 message MySqlResponse {
@@ -15,6 +13,7 @@ message MySqlResponse {
 };
 
 service MySqlService {
-    rpc LoginOrRegister(MySqlRequest) returns (MySqlResponse);
+    rpc Login(MySqlRequest) returns (MySqlResponse);
+    rpc Register(MySqlRequest) returns (MySqlResponse);
 };
 

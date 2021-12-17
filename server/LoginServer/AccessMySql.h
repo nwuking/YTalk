@@ -11,6 +11,8 @@
 
 #include <brpc/channel.h>
 
+#include "base/structs.h"
+
 namespace YTalk
 {
 
@@ -23,6 +25,11 @@ public:
     virtual ~AccessMySql();
 
     int init(ConfigParse *cParse);
+
+    int queryForLogin(const std::string &username, const std::string &password);
+
+    //int updateForRegister(const std::string &username, const std::string &password);
+    int updateForRegister(const UserRegisterInfo &register_info);
 
 private:
     std::string _dbProxyServer_ip;

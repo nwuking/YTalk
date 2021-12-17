@@ -1,0 +1,40 @@
+/*================================================================================   
+ *    Date: 2021-12-16
+ *    Author: nwuking
+ *    Email: nwuking@qq.com  
+================================================================================*/
+
+#ifndef YTALK_STRUCTS_H
+#define YTalk_structs_h
+
+#include <string>
+
+namespace YTalk
+{
+
+enum MySqlStatus {
+    MYSQL_SUCCESS = 0,
+    MYSQL_DB_NOT_EXITS,
+    MYSQL_CONN_IS_NULLPTR,
+    MYSQL_UPDATE_SUCCESS,
+    MYSQL_UPDATE_FAIL,
+    MYSQL_OPTION_NOT_USE,
+};
+
+enum LoginStatus {
+    LOGIN_SUCCESS = 0,
+    LOGIN_FAIL,
+    LOGIN_JSON_DEFECT_U_OR_P,
+    LOGIN_SERVER_ERROR,
+    LOGIN_RPC_FAIL
+};
+
+struct UserRegisterInfo {
+    std::string password;
+    //TODO
+};
+
+
+}     /// namespace YTalk
+
+#endif

@@ -12,10 +12,10 @@
 #include "MySqlService.h"
 #include "RedisService.h"
 
-DEFINE_string(config, "./config.conf", "the config of the DBProxyServer");
-DEFINE_string(log_config, "./log.conf", "the config of log");
-DEFINE_string(ip, "server_ip", "ip address of server");
-DEFINE_string(port, "server_port", "port of server");
+DEFINE_string(config, "./db_proxy_server.conf", "the config of the DBProxyServer");
+DEFINE_string(log_config, "./db_proxy_log.conf", "the config of log");
+DEFINE_string(ip, "server_listen_ip", "ip address of server");
+DEFINE_string(port, "server_listen_port", "port of server");
 DEFINE_string(threads, "num_threads", "the number of worker threads");
 DEFINE_string(server_max_concurrency, "server_max_concurrency", "sever-level");
 
@@ -40,11 +40,12 @@ int main(int argc, char *argv[])
         LOG(ERROR) << "MySqlServiceImpl init failed";
         return 2;
     }
+    /*
     ::YTalk::RedisServiceImpl redisService;
     if(redisService.init(&confParse)) {
         LOG(ERROR) << "RedisServiceImpl init failed";
         return 3;
-    }
+    }*/
 
     brpc::Server server;
 
@@ -52,10 +53,11 @@ int main(int argc, char *argv[])
         LOG(ERROR) << "Fail to add service: MySqlServiceImpl";
         return 4;
     }
+    /*
     if(server.AddService(&redisService, brpc::SERVER_DOESNT_OWN_SERVICE) != 0) {
         LOG(ERROR) << "Fail to add service: RedisServiceImpl";
         return 5;
-    }
+    }*/
 
     brpc::ServerOptions options;
 

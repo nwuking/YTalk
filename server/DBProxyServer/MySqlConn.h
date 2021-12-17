@@ -28,6 +28,12 @@ public:
     bool next();
     int getInt(const char *key);
     char* getString(const char *key);
+
+    static void freeMResultSet(MResultSet *set) {
+        if(set) {
+            delete set;
+        }
+    }
     //TODO
 
     /// for test
