@@ -19,7 +19,7 @@ int main()
         LOG(INFO) << "OK";
     }
     else {
-        LOG(INFO) << "FAIL";
+        LOG(INFO) << "FAIL"
     }
 
     newSink = ::logging::SetLogSink(oldSink);

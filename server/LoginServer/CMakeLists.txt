@@ -3,6 +3,8 @@ project(YTalk_Login_Server)
 
 set(SOURCES 
     AccessMySql.cpp 
+    LoginService.cpp  
+    Session.cpp   
     )
 
 ## for include

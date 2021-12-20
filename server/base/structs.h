@@ -5,7 +5,7 @@
 ================================================================================*/
 
 #ifndef YTALK_STRUCTS_H
-#define YTalk_structs_h
+#define YTALK_STRUCTS_H
 
 #include <string>
 

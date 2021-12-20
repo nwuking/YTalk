@@ -1,4 +1,19 @@
 syntax = "proto2";
-package = LoginServer;
+package LoginServer;
 
-cc_generic_services = true;
+option cc_generic_services = true;
+
+message AuthRequest {
+    required string message = 1;
+};
+
+message AuthResponse {
+    optional int32 status = 1;
+};
+
+service AuthService {
+    rpc Auth(AuthRequest) returns (AuthResponse);
+    rpc Notify(AuthRequest) returns (AuthResponse);
+    rpc FirstSend(AuthRequest) returns (AuthResponse);
+    rpc LastSend(AuthRequest) returns (AuthResponse);
+};

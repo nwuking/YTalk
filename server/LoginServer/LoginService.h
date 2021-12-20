@@ -15,6 +15,7 @@ namespace YTalk
 
 class AccessMySql;
 class ConfigParse;
+class Session;
 
 class LoginServiceImpl : public ::LoginServer::HttpService
 {
@@ -32,10 +33,11 @@ public:
                        ::LoginServer::HttpResponse* response,
                        ::google::protobuf::Closure* done);
 
-    int init(ConfigParse *cParse);
+    int init(ConfigParse *cParse, Session *session);
 
 private:
     AccessMySql *_accessMySql;
+    Session *_session;
 
 };    // class LoginServiceImpl
 

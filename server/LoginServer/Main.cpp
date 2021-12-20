@@ -9,6 +9,8 @@
 
 #include "base/Logging.h"
 #include "base/ConfigParse.h"
+#include "Session.h"
+#include "LoginService.h"
 
 DEFINE_string(ip, "login_server_ip", "login server ip key");
 DEFINE_string(client_port, "client_port", "for listen client");
@@ -31,6 +33,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    ::YTalk::Session *session = YTalk::Session::getInstance();
     //////
     //TODO
 
