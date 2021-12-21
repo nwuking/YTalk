@@ -5,6 +5,8 @@ set(SOURCES
     AccessMySql.cpp 
     LoginService.cpp  
     Session.cpp   
+    protobuf/login.pb.cc  
+    protobuf/auth.pb.cc  
     )
 
 ## for include

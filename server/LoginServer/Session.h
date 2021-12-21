@@ -38,7 +38,7 @@ public:
 
         return _session;
     }
-    static void freeSession() {
+    static void freeSession(/*Session *session*/) {
         if(_session) {
             delete _session;
         }

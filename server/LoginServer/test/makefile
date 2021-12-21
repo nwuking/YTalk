@@ -1,4 +1,4 @@
-all : access_mysql_test
+all : access_mysql_test testForLogin
 .PHONY : all
 
 BRPC_PATH=/root/YTalk/thirdparty
@@ -38,6 +38,13 @@ access_mysql_test:access_mysql_test.o
 
 access_mysql_test.o:access_mysql_test.cpp
 	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o access_mysql_test.o
+
+testForLogin:testForLogin.o  
+	$(CXX) $(LIBPATHS) $(LINK_OPTIONS) -o testForLogin
+
+testForLogin.o:testForLogin.cpp 
+	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o testForLogin.o
+
 
 
 clean:

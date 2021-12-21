@@ -100,11 +100,11 @@ int main(int argc, char *argv[])
         return 7;
     }
     
+    server.RunUntilAskedToQuit();
+
     newSink = ::logging::SetLogSink(oldSink);
     if(newSink) {
         delete newSink;
     }
-
-    server.RunUntilAskedToQuit();
     return 0;
 }

@@ -9,6 +9,8 @@
 namespace YTalk
 {
 
+Session* Session::_session = nullptr;
+
 Session::Session() : _mutex()/*, _cond(_mutex)*/ {
     //
 }
