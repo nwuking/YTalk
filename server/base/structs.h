@@ -26,7 +26,8 @@ enum LoginStatus {
     LOGIN_FAIL,
     LOGIN_JSON_DEFECT_U_OR_P,
     LOGIN_SERVER_ERROR,
-    LOGIN_RPC_FAIL
+    LOGIN_RPC_FAIL,
+    LOGIN_CLIENT_ERROR
 };
 
 struct UserRegisterInfo {
