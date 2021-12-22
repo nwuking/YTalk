@@ -1,5 +1,5 @@
 /*================================================================================   
- *    Date: 
+ *    Date: 2021-12-21
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
@@ -22,7 +22,7 @@ namespace YTalk
 {
 
 LoginServiceImpl::LoginServiceImpl() {
-    _accessMySql == nullptr;
+    _accessMySql = nullptr;
     _session = nullptr;
 }
 
@@ -73,7 +73,7 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
             return;
         }
 
-        std::string rspMsg = "{\"server_ip\" : \"" + gate->_ip + "\", \"server_port\" : \"" + gate->_port + "\"}";
+        std::string rspMsg = "{\"server_ip\" : \"" + gate->_ip + "\", \"server_port\" : " + std::to_string(gate->_port) + "}";
 
         //rapidjson::Document document;
         document.Parse(rspMsg.c_str());
@@ -110,7 +110,11 @@ int LoginServiceImpl::init(ConfigParse *cParse, Session *session) {
         LOG(ERROR) << "new AccessMySql Fail";
         return 1;
     }
-    _accessMySql->init(cParse);
+    if(_accessMySql->init(cParse)) {
+        LOG(ERROR) << "AccessMySql init fail";
+        return 2;
+    }
+    return 0;
     //TODO
 }
 

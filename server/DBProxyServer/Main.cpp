@@ -105,6 +105,6 @@ int main(int argc, char *argv[])
     newSink = ::logging::SetLogSink(oldSink);
     if(newSink) {
         delete newSink;
-    }
+    } 
     return 0;
 }

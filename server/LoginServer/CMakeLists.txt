@@ -4,6 +4,7 @@ project(YTalk_Login_Server)
 set(SOURCES 
     AccessMySql.cpp 
     LoginService.cpp  
+    AuthService.cpp 
     Session.cpp   
     protobuf/login.pb.cc  
     protobuf/auth.pb.cc  

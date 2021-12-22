@@ -1,4 +1,4 @@
-all : access_mysql_test testForLogin
+all : access_mysql_test testForLogin testForFirstSend testForNotify testForServer
 .PHONY : all
 
 BRPC_PATH=/root/YTalk/thirdparty
@@ -7,6 +7,7 @@ DBPROXY_PATH=/root/YTalk/server
 LOGINSERVER_PATH=/root/YTalk/server
 MYSQL_PATH=/usr/
 REDIS_PATH=/usr/local/
+RAPIDJSON_PATH=/root/YTalk/thirdparty
 
 HDRS=$(MYSQL_PATH)/include/
 HDRS+=$(BRPC_PATH)/brpc/include/
@@ -14,6 +15,7 @@ HDRS+=$(BASE_PATH)/
 HDRS+=$(DBPROXY_PATH)/DBProxyServer/
 HDRS+=$(REDIS_PATH)/include
 HDRS+=$(LOGINSERVER_PATH)/LoginServer/
+HDRS+=$(RAPIDJSON_PATH)/
 
 LIBS=$(MYSQL_PATH)/lib/x86_64-linux-gnu/
 LIBS+=$(BRPC_PATH)/brpc/lib/
@@ -45,6 +47,23 @@ testForLogin:testForLogin.o
 testForLogin.o:testForLogin.cpp 
 	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o testForLogin.o
 
+testForFirstSend:testForFirstSend.o  
+	$(CXX) $(LIBPATHS) $(LINK_OPTIONS) -o testForFirstSend
+
+testForFirstSend.o:testForFirstSend.cpp 
+	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o testForFirstSend.o
+
+testForNotify:testForNotify.o  
+	$(CXX) $(LIBPATHS) $(LINK_OPTIONS) -o testForNotify
+
+testForNotify.o:testForNotify.cpp 
+	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o testForNotify.o
+
+testForServer:testForServer.o  
+	$(CXX) $(LIBPATHS) $(LINK_OPTIONS) -o testForServer
+
+testForServer.o:testForServer.cpp 
+	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o testForServer.o
 
 
 clean:

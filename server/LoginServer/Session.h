@@ -19,13 +19,13 @@ namespace YTalk
 
 struct GateServerMsg
 {
-    GateServerMsg(const std::string &ip, const std::string &port) {
+    GateServerMsg(const std::string &ip, int port) {
         _ip = ip;
         _port = port;
     }
 
     std::string _ip;
-    std::string _port;
+    int _port;
 };
 
 class Session
@@ -45,9 +45,19 @@ public:
         _session = nullptr;
     }
 
-    void record(const std::string &server_name, const std::string &server_port, struct in_addr &server_ip);
+    void record(const std::string &server_name, int server_port, struct in_addr &server_ip);
+
+    void record(const std::string &server_name, int counts);
+
+    void record(const std::string &server_name);
 
     struct GateServerMsg* getGateServerMsg();
+
+    /// for test
+    int test(const std::string &name) {
+        return _clientsPerServer[name];
+    }
+    /// end
 
 private:
     Session();

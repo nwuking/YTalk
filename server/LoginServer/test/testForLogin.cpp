@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 
     ::YTalk::Session *session = ::YTalk::Session::getInstance();
     struct in_addr ip = {};
-    session->record("nwu", "520", ip);
+    session->record("nwu", 5200, ip);
 
     YTalk::LoginServiceImpl pp;
     pp.init(&cParse, session);
