@@ -1,5 +1,5 @@
 /*================================================================================   
- *    Date: 
+ *    Date: 2021-12-23
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
@@ -22,8 +22,16 @@ public:
 
     int init(ConfigParse *cParse);
 
+    void firstSend();
+
 private:
     brpc::Channel _channel;
+
+    std::string _gate_server_name;
+    std::string _gate_server_port;
+    
+    std::string _login_server_ip;
+    std::string _login_server_port;
 
     //static ConLogin *_conLogin;
 };    /// class ConLogin

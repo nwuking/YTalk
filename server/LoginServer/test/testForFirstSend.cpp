@@ -31,14 +31,14 @@ int main(int argc, char *argv[])
     std::string msg = "{\"name\" :\"nwuking\", \"port\" : 5200}";
 
     rapidjson::Document document;
-
+/*
     document.Parse(msg.c_str());
         rapidjson::StringBuffer sb;
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
         document.Accept(writer);
 
         msg = sb.GetString();
-
+*/
     ::LoginServer::AuthRequest request;
     request.set_message(msg.c_str());
 

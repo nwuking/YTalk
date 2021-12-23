@@ -94,6 +94,8 @@ void AuthServiceImpl::FirstSend(::google::protobuf::RpcController* controller,
     //ip_and_port.port = gate_server_port;
 
     _session->record(gate_server_name, gate_server_port, ip_and_port.ip);
+
+    LOG(INFO) << "Session had register: {" << gate_server_name << ":" << gate_server_port << "}";
 }
 
 void AuthServiceImpl::LastSend(::google::protobuf::RpcController* controller,
