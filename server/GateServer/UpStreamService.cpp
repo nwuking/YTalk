@@ -1,5 +1,5 @@
 /*================================================================================   
- *    Date: 
+ *    Date: 2021-12-22
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
@@ -8,6 +8,8 @@
 #include "rapidjson/document.h"
 #include "base/Logging.h"
 #include "base/structs.h"
+#include "ConLogin.h"
+#include "Channels.h"
 
 #define TOKEN "token"
 #define USERNAME "username"
@@ -58,7 +60,24 @@ void UpStreamServiceImpl::FirstSend(::google::protobuf::RpcController* controlle
 
     std::string token = t->value.GetString();
     std::string username = u->value.GetString();
-    //TODO
+
+    if(!_conLogin->auth(username, token)) {
+        butil::EndPoint client_ip_and_port = cntl->remote_side();
+        if(_channels->add(username, client_ip_and_port)) {
+            response->set_status(LOGIN_FAIL);
+        }
+        else {
+            response->set_status(LOGIN_SUCCESS);
+        }        
+    }
+    else {
+        response->set_status(LOGIN_FAIL);
+    }
+}
+
+int UpStreamServiceImpl::init(ConfigParse *cParse, ConLogin *cLogin, Channels *_cha) {
+    _conLogin = cLogin;
+    _channels = _cha;
 }
 
 }    /// namespace YTalk

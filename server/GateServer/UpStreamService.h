@@ -1,5 +1,5 @@
 /*================================================================================   
- *    Date: 
+ *    Date: 2021-12-22
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
@@ -12,6 +12,10 @@
 
 namespace YTalk
 {
+
+class ConfigParse;
+class ConLogin;
+class Channels;
 
 class UpStreamServiceImpl : public GateServer::UpStreamService
 {
@@ -29,7 +33,11 @@ public:
                        ::GateServer::Response* response,
                        ::google::protobuf::Closure* done);
 
-    int init();
+    int init(ConfigParse *cParse, ConLogin *cLogin, Channels *cha);
+
+private:
+    ConLogin *_conLogin;
+    Channels *_channels;
 };    /// class 
 
 

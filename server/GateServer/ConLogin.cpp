@@ -81,6 +81,11 @@ int ConLogin::init(ConfigParse *cParse) {
     return 0;
 }
 
+int ConLogin::auth(const std::string &username, const std::string &token) {
+    //TODO
+    return 0;
+}
+
 void ConLogin::firstSend() {
     LoginServer::AuthService_Stub stub(&_channel);
     LoginServer::AuthRequest request;

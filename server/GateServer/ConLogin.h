@@ -22,6 +22,8 @@ public:
 
     int init(ConfigParse *cParse);
 
+    int auth(const std::string &username, const std::string &token);
+
     void firstSend();
 
 private:
