@@ -1,0 +1,18 @@
+syntax = "proto2";
+package RouteServer;
+
+option cc_generic_services = true;
+
+message Request {
+    required int32 flag = 1;
+    optional string message = 2;
+};
+
+message Response {
+    required int32 status = 1;
+};
+
+service RouteService {
+    rpc ToBusinessLayer(Request) returns (Response);
+    rpc ToBottomLayer(Request) returns (Response);
+};

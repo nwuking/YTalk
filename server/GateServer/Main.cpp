@@ -9,6 +9,8 @@
 
 #include "base/Logging.h"
 #include "base/ConfigParse.h"
+#include "ConLogin.h"
+#include "ConRoute.h"
 
 DEFINE_string(ip, "gate_server_listen_ip", "");
 DEFINE_string(port, "gate_server_listen_port", "");
@@ -28,6 +30,18 @@ int main(int argc, char *argv[])
     if(!confParse.status()) {
         LOG(ERROR) << "Fail to parse config";
         return 1;
+    }
+
+    YTalk::ConLogin conLogin;
+    if(conLogin.init(&confParse)) {
+        LOG(ERROR) << "Fail to init ConLogin";
+        return 2;
+    }
+
+    YTalk::ConRoute conRoute;
+    if(conRoute.init(&confParse)) {
+        LOG(ERROR) << "Fail to init ConRoute";
+        return 3;
     }
     //TODO
     if(newSink) {

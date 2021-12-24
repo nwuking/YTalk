@@ -30,6 +30,8 @@ void UpStreamServiceImpl::Send(::google::protobuf::RpcController* controller,
                        ::GateServer::Response* response,
                        ::google::protobuf::Closure* done)
 {
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
     //TODO
 }
 
