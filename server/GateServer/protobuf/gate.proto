@@ -1,5 +1,5 @@
 syntax = "proto2";
-package RouteServer;
+package GateServer;
 
 option cc_generic_services = true;
 
@@ -12,8 +12,7 @@ message Response {
     required int32 status = 1;
 };
 
-service RouteService {
-    rpc ToBusinessLayer(Request) returns (Response);
-    rpc ToBottomLayer(Request) returns (Response);
+service GateService {
+    rpc Send(Request) returns (Response);
     rpc FirstSend(Request) returns (Response);
 };
