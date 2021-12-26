@@ -1,33 +1,33 @@
 /*================================================================================   
- *    Date: 2021-12-25
+ *    Date: 2021-12-26
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
 
-#include "GateSession.h"
-#include "base/Logging.h"
+#include "BusinessSession.h"
 #include "base/ConfigParse.h"
+#include "base/Logging.h"
 
-#define CONNECTION_TYPE "connection_type_to_gate"
-#define TIME_OUT "time_out_to_gate"
-#define MAX_RETRY "max_retry_to_gate"
+#define CONNECTION_TYPE "connection_type_to_business"
+#define TIME_OUT "time_out_to_business"
+#define MAX_RETRY "max_retry_to_business"
 
 namespace YTalk
 {
 
-GateSession::GateSession() {
-    //TODO
+BusinessSession::BusinessSession() {
+    ///TODO
 }
 
-GateSession::~GateSession() {
-    for(auto &p : _gate_channel) {
+BusinessSession::~BusinessSession() {
+    for(auto &p : _channel_map) {
         delete p.second;
         p.second = nullptr;
     }
-    //TODO
+    ///TODO
 }
 
-int GateSession::init(ConfigParse *cParse) {
+int BusinessSession::init(ConfigParse *cParse) {
     if(!cParse) {
         return 0;
     }
@@ -48,9 +48,9 @@ int GateSession::init(ConfigParse *cParse) {
     return 0;
 }
 
-void GateSession::record(const std::string &server_name, struct in_addr &server_ip, int server_port) {
-    if(_gate_channel.find(server_name) != _gate_channel.end()) {
-        LOG(ERROR) << "The GateServer:{" << server_name << "} had exist";
+void BusinessSession::record(const std::string &server_name, struct in_addr &server_ip, int server_port) {
+    if(_channel_map.find(server_name) != _channel_map.end()) {
+        LOG(ERROR) << "The BusinessServer:{" << server_name << "} had exist";
         return;
     }
 
@@ -64,9 +64,9 @@ void GateSession::record(const std::string &server_name, struct in_addr &server_
         return;
     }
 
-    _gate_channel.insert(std::make_pair(server_name, channel));
+    _channel_map.insert(std::make_pair(server_name, channel));
+    _nameVec.push_back(server_name);
+    ///TODO
 }
 
-} // namespace YTalk
-
-///TODO
+}   //// namesapce YTalk

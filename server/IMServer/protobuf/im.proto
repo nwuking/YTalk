@@ -1,0 +1,12 @@
+syntax = "proto2";
+package IMServer;
+
+option cc_generic_services = true;
+
+message Request {};
+
+message Response {};
+
+service IMService {
+    rpc Send(Request) returns (Response);
+};

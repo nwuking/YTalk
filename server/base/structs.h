@@ -30,6 +30,15 @@ enum LoginStatus {
     LOGIN_CLIENT_ERROR
 };
 
+enum IMFLAG {
+    FLAG_IM = 1
+};
+
+enum SERVERFLAG {
+    FLAG_GATE_SERVER = 1,
+    FLAG_IM_SERVER
+};
+
 struct UserRegisterInfo {
     std::string password;
     //TODO

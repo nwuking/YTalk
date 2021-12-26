@@ -14,6 +14,7 @@ namespace YTalk
 
 class ConfigParse;
 class GateSession;
+class BusinessSession;
 
 class RouteServiceImpl : public RouteServer::RouteService
 {
@@ -21,7 +22,7 @@ public:
     RouteServiceImpl();
     virtual ~RouteServiceImpl();
 
-    int init(ConfigParse *cParse, GateSession *gSession);
+    int init(ConfigParse *cParse, GateSession *gSession, BusinessSession *bSession);
 
     virtual void ToBusinessLayer(::google::protobuf::RpcController* controller,
                        const ::RouteServer::Request* request,
@@ -40,6 +41,7 @@ public:
 
 private:
     GateSession *_gateSession;
+    BusinessSession *_businessSession;
 };    /// class 
 
 }    // namespace YTalk
