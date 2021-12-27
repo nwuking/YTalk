@@ -10,6 +10,7 @@
 #include "base/structs.h"
 #include "ConLogin.h"
 #include "Channels.h"
+#include "ConRoute.h"
 
 #define TOKEN "token"
 #define USERNAME "username"
@@ -25,14 +26,28 @@ GateServiceImpl::~GateServiceImpl() {
     //TODO
 }
 
-void GateServiceImpl::Send(::google::protobuf::RpcController* controller,
+void GateServiceImpl::Send2Route(::google::protobuf::RpcController* controller,
                        const ::GateServer::Request* request,
                        ::GateServer::Response* response,
                        ::google::protobuf::Closure* done)
 {
     brpc::ClosureGuard done_guard(done);
     brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
-    //TODO
+
+    GateConText gateConText;
+    gateConText.flag = request->flag();
+    gateConText.msg = request->message();
+
+    bool op = _conRoute->send2Route(gateConText);
+
+    if(op) {
+        LOG(INFO) << "Send 2 RouteServer sucessful";
+        response->set_status(GATE_STATUS_OK);
+    }
+    else {
+        LOG(ERROR) << "Fail to send msg to RouteServer";
+        response->set_status(GATE_STATUS_FAIL);
+    }
 }
 
 void GateServiceImpl::FirstSend(::google::protobuf::RpcController* controller,
@@ -77,9 +92,10 @@ void GateServiceImpl::FirstSend(::google::protobuf::RpcController* controller,
     }
 }
 
-int GateServiceImpl::init(ConfigParse *cParse, ConLogin *cLogin, Channels *_cha) {
+int GateServiceImpl::init(ConfigParse *cParse, ConLogin *cLogin, Channels *_cha, ConRoute *cRoute) {
     _conLogin = cLogin;
     _channels = _cha;
+    _conRoute = cRoute;
 }
 
 }    /// namespace YTalk

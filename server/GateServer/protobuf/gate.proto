@@ -13,6 +13,6 @@ message Response {
 };
 
 service GateService {
-    rpc Send(Request) returns (Response);
+    rpc Send2Route(Request) returns (Response);
     rpc FirstSend(Request) returns (Response);
 };

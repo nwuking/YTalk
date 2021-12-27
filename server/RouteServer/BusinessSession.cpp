@@ -7,6 +7,7 @@
 #include "BusinessSession.h"
 #include "base/ConfigParse.h"
 #include "base/Logging.h"
+#include "base/structs.h"
 
 #include "IMServer/protobuf/im.pb.h"
 
@@ -88,8 +89,20 @@ bool BusinessSession::send2IM(const std::string &msg) {
 
     std::string name = _nameVec[index];
     brpc::Channel *channel = _channel_map[name];
-    //TODO
-    return true;
+
+    IMServer::IMService_Stub stub(channel);
+    IMServer::Request request;
+    IMServer::Response response;
+    brpc::Controller cntl;
+
+    request.set_message(msg);
+    stub.Send(&cntl, &request, &response, nullptr);
+
+    if(!cntl.Failed() && response.status() == IM_STATUS_OK) {
+        return true;
+    }
+
+    return false;
 }
 
 }   //// namesapce YTalk

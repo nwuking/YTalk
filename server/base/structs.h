@@ -12,6 +12,11 @@
 namespace YTalk
 {
 
+typedef struct {
+    int flag;
+    std::string msg;
+} GateConText;
+
 enum MySqlStatus {
     MYSQL_SUCCESS = 0,
     MYSQL_DB_NOT_EXITS,
@@ -42,6 +47,16 @@ enum SERVERFLAG {
 enum ROUTE_STATUS {
     ROUTE_STATUS_OK = 0,
     ROUTE_STATUS_FAIL
+};
+
+enum IM_STATUS {
+    IM_STATUS_OK = 0,
+    IM_STATUS_FAIL
+};
+
+enum GATE_STATUS {
+    GATE_STATUS_OK = 0,
+    GATE_STATUS_FAIL
 };
 
 struct UserRegisterInfo {

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "brpc/channel.h"
+#include "base/structs.h"
  
 namespace YTalk
 {
@@ -24,9 +25,13 @@ public:
 
     int init(ConfigParse *cParse);
 
-    bool firstSend();
+    bool send2Route(const GateConText &cnt);
+
+    //bool firstSend();
 
 private:
+    bool firstSend();
+
     std::string _route_server_ip;
     std::string _route_server_port_str;
 

@@ -15,6 +15,7 @@ namespace YTalk
 class ConfigParse;
 class ConLogin;
 class Channels;
+class ConRoute;
 
 class GateServiceImpl : public GateServer::GateService
 {
@@ -22,7 +23,7 @@ public:
     GateServiceImpl();
     virtual ~GateServiceImpl();
 
-    virtual void Send(::google::protobuf::RpcController* controller,
+    virtual void Send2Route(::google::protobuf::RpcController* controller,
                        const ::GateServer::Request* request,
                        ::GateServer::Response* response,
                        ::google::protobuf::Closure* done);
@@ -32,11 +33,12 @@ public:
                        ::GateServer::Response* response,
                        ::google::protobuf::Closure* done);
 
-    int init(ConfigParse *cParse, ConLogin *cLogin, Channels *cha);
+    int init(ConfigParse *cParse, ConLogin *cLogin, Channels *cha, ConRoute *cRoute);
 
 private:
     ConLogin *_conLogin;
     Channels *_channels;
+    ConRoute *_conRoute;
 };    /// class 
 
 

@@ -28,22 +28,22 @@ ConRoute::~ConRoute() {
     ///TODO
 }
 
-int ConRoute::init(ConfigParse *cPasre) {
-    if(!cPasre) {
+int ConRoute::init(ConfigParse *cParse) {
+    if(!cParse) {
         LOG(ERROR) << "ConfigParse is nullptr";
         return 1;
     }
 
-    cPasre->getValue(ROUTE_SERVER_IP, _route_server_ip);
-    cPasre->getValue(ROUTE_SERVER_PORT, _route_server_port_str);
+    cParse->getValue(ROUTE_SERVER_IP, _route_server_ip);
+    cParse->getValue(ROUTE_SERVER_PORT, _route_server_port_str);
     if(_route_server_port_str.empty() || _route_server_ip.empty()) {
         LOG(ERROR) << "You need to configure ip or port";
         return 2;
     }
     std::string server_ip_and_port = _route_server_ip + ":" + _route_server_port_str;
 
-    cPasre->getValue(GATE_SERVER_NAME, _gate_server_name);
-    cPasre->getValue(GATE_SERVER_PORT, _gate_server_port);
+    cParse->getValue(GATE_SERVER_NAME, _gate_server_name);
+    cParse->getValue(GATE_SERVER_PORT, _gate_server_port);
     if(_gate_server_name.empty() || _gate_server_port.empty()) {
         LOG(ERROR) << "You need to configure GateServer name or port";
         return 3;
@@ -75,6 +75,26 @@ int ConRoute::init(ConfigParse *cPasre) {
     }
 
     return 0;
+}
+
+bool ConRoute::send2Route(const GateConText &cont) {
+    RouteServer::Request request;
+    RouteServer::Response response;
+    brpc::Controller cntl;
+    RouteServer::RouteService_Stub stub(&_channel);
+
+    request.set_flag(cont.flag);
+    request.set_message(cont.msg);
+
+    stub.ToBusinessLayer(&cntl, &request, &response, nullptr);
+
+    if(!cntl.Failed() && response.status() == ROUTE_STATUS_OK) {
+        LOG(INFO) << "Send 2 RouteServer sucessful";
+        return true;
+    }
+
+    LOG(ERROR) << "Fail to Send msg 2 RouteServer";
+    return false;
 }
 
 bool ConRoute::firstSend() {
