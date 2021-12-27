@@ -8,6 +8,8 @@
 #include "base/ConfigParse.h"
 #include "base/Logging.h"
 
+#include "IMServer/protobuf/im.pb.h"
+
 #define CONNECTION_TYPE "connection_type_to_business"
 #define TIME_OUT "time_out_to_business"
 #define MAX_RETRY "max_retry_to_business"
@@ -66,7 +68,28 @@ void BusinessSession::record(const std::string &server_name, struct in_addr &ser
 
     _channel_map.insert(std::make_pair(server_name, channel));
     _nameVec.push_back(server_name);
+
+    _size.fetch_add(1);
     ///TODO
+}
+
+bool BusinessSession::send2IM(const std::string &msg) {
+    int index = 0;
+    {
+        MutexLock lock(_mutex);
+        if(_index >= _size) {
+            _index = 0;
+        }
+        index = _index.fetch_add(1);
+    }
+    if(index >= _size) {
+        index = 0;
+    }
+
+    std::string name = _nameVec[index];
+    brpc::Channel *channel = _channel_map[name];
+    //TODO
+    return true;
 }
 
 }   //// namesapce YTalk

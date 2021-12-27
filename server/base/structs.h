@@ -39,6 +39,11 @@ enum SERVERFLAG {
     FLAG_IM_SERVER
 };
 
+enum ROUTE_STATUS {
+    ROUTE_STATUS_OK = 0,
+    ROUTE_STATUS_FAIL
+};
+
 struct UserRegisterInfo {
     std::string password;
     //TODO

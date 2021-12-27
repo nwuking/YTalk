@@ -43,15 +43,23 @@ void RouteServiceImpl::ToBusinessLayer(::google::protobuf::RpcController* contro
     brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
 
     int32_t flag = request->flag();
+    std::string msg = request->message();
     
+    bool op = false;
     switch(flag) {
         case FLAG_IM:
-            //TODO
+            op = _businessSession->send2IM(msg);
             break;
         default:
             //TODO
     }
-    //TODO
+
+    if(op) {
+        response->set_status(ROUTE_STATUS_OK);
+    }
+    else {
+        response->set_status(ROUTE_STATUS_FAIL);
+    }
 }
 
 void RouteServiceImpl::ToBottomLayer(::google::protobuf::RpcController* controller,
