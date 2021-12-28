@@ -1,14 +1,6 @@
 cmake_minimum_required(VERSION 2.8.10)
 project(YTalk_Gate_Server)
 
-set(SOURCES 
-     ConLogin.cpp 
-     Channels.cpp 
-     ConRoute.cpp 
-     GateService.cpp 
-     protobuf/gate.pb.cc 
-    )
-
 ## for include
 set(BASE_INCLUDE ${PROJECT_SOURCE_DIR}/../)
 ##set(DBPROXY_INCLUDE ${PROJECT_SOURCE_DIR}/../)
@@ -20,6 +12,16 @@ set(RAPIDJSON_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/)
 set(LOGINSERVER_INCLUDE ${PROJECT_SOURCE_DIR}/../)
 set(ROUTESERVER_INCLUDE ${PROJECT_SOURCE_DIR}/../)
 set(GATESERVER_INCLUDE ${PROJECT_SOURCE_DIR}/)
+
+set(SOURCES 
+     ConLogin.cpp 
+     Channels.cpp 
+     ConRoute.cpp 
+     GateService.cpp 
+     protobuf/gate.pb.cc 
+     ${LOGINSERVER_INCLUDE}/LoginServer/protobuf/auth.pb.cc 
+     ${ROUTESERVER_INCLUDE}/RouteServer/protobuf/route.pb.cc 
+    )
 
 
 ## for CMAKE_CXX_FLAGS

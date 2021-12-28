@@ -12,7 +12,7 @@
 #include "IMServer/protobuf/im.pb.h"
 
 #define CONNECTION_TYPE "connection_type_to_business"
-#define TIME_OUT "time_out_to_business"
+#define TIME_OUT "timeout_ms_to_business"
 #define MAX_RETRY "max_retry_to_business"
 
 namespace YTalk

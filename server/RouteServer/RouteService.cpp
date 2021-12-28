@@ -51,6 +51,7 @@ void RouteServiceImpl::ToBusinessLayer(::google::protobuf::RpcController* contro
             op = _businessSession->send2IM(msg);
             break;
         default:
+            break;
             //TODO
     }
 

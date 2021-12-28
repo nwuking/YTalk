@@ -9,7 +9,7 @@
 #include "base/ConfigParse.h"
 
 #define CONNECTION_TYPE "connection_type_to_gate"
-#define TIME_OUT "time_out_to_gate"
+#define TIME_OUT "timeout_ms_to_gate"
 #define MAX_RETRY "max_retry_to_gate"
 
 namespace YTalk
