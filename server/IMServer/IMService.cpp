@@ -7,6 +7,8 @@
 #include "IMService.h"
 #include "base/Logging.h"
 #include "base/ConfigParse.h"
+#include "base/structs.h"
+#include "ConRoute_im.h"
 
 namespace YTalk
 {
@@ -19,8 +21,9 @@ IMServiceImpl::~IMServiceImpl() {
     //TODO
 }
 
-int IMServiceImpl::init(ConfigParse *cParse) {
+int IMServiceImpl::init(ConfigParse *cParse, ConRoute *cRoute) {
     /// TODO
+    return 0;
 }
 
 void IMServiceImpl::Send(::google::protobuf::RpcController* controller,
@@ -28,7 +31,10 @@ void IMServiceImpl::Send(::google::protobuf::RpcController* controller,
                        ::IMServer::Response* response,
                        ::google::protobuf::Closure* done)
 {
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
     ///TODO
+    response->set_status(IM_STATUS_OK);
 }
 
 }      //// namespce YTalk

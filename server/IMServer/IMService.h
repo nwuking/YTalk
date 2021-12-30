@@ -14,6 +14,7 @@ namespace YTalk
 {
 
 class ConfigParse;
+class ConRoute;
 
 class IMServiceImpl : public IMServer::IMService
 {
@@ -21,7 +22,7 @@ public:
     IMServiceImpl();
     virtual ~IMServiceImpl();
 
-    int init(ConfigParse *cParse);
+    int init(ConfigParse *cParse, ConRoute *cRoute);
 
     virtual void Send(::google::protobuf::RpcController* controller,
                        const ::IMServer::Request* request,

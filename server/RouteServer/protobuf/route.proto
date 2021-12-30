@@ -9,7 +9,7 @@ message Request {
 };
 
 message Response {
-    required int32 status = 1;
+    optional int32 status = 1;
 };
 
 service RouteService {

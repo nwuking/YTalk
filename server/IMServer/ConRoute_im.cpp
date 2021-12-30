@@ -1,10 +1,10 @@
 /*================================================================================   
- *    Date: 2021-12-24
+ *    Date: 2021-12-30
  *    Author: nwuking
  *    Email: nwuking@qq.com  
 ================================================================================*/
 
-#include "ConRoute.h"
+#include "ConRoute_im.h"
 #include "base/ConfigParse.h"
 #include "base/Logging.h"
 #include "RouteServer/protobuf/route.pb.h"
@@ -12,21 +12,21 @@
 
 #define ROUTE_SERVER_IP "route_server_ip"
 #define ROUTE_SERVER_PORT "route_server_port"
-#define GATE_SERVER_NAME "gate_server_name"
-#define GATE_SERVER_PORT "gate_server_port"
 #define CONNECTION_TYPE "channel_option_connection_type"
 #define TIME_OUT "channel_option_time_out"
 #define MAX_RETRY "channel_option_max_retry"
+#define IM_SERVER_NAME "im_server_name"
+#define IM_SERVER_PORT "im_server_listen_port"
 
 namespace YTalk
 {
 
 ConRoute::ConRoute() {
-    //TODO
+    ///TODO
 }
 
 ConRoute::~ConRoute() {
-    ///TODO
+    //TODO
 }
 
 int ConRoute::init(ConfigParse *cParse) {
@@ -43,9 +43,9 @@ int ConRoute::init(ConfigParse *cParse) {
     }
     std::string server_ip_and_port = _route_server_ip + ":" + _route_server_port_str;
 
-    cParse->getValue(GATE_SERVER_NAME, _gate_server_name);
-    cParse->getValue(GATE_SERVER_PORT, _gate_server_port);
-    if(_gate_server_name.empty() || _gate_server_port.empty()) {
+    cParse->getValue(IM_SERVER_NAME, _im_server_name);
+    cParse->getValue(IM_SERVER_PORT, _im_server_port);
+    if(_im_server_name.empty() || _im_server_port.empty()) {
         LOG(ERROR) << "You need to configure GateServer name or port";
         return 3;
     }
@@ -74,28 +74,8 @@ int ConRoute::init(ConfigParse *cParse) {
         LOG(ERROR) << "Fail to firstSend to RouteServer";
         return 5;
     }
-
+    //TODO
     return 0;
-}
-
-bool ConRoute::send2Route(const GateConText &cont) {
-    RouteServer::Request request;
-    RouteServer::Response response;
-    brpc::Controller cntl;
-    RouteServer::RouteService_Stub stub(&_channel);
-
-    request.set_flag(cont.flag);
-    request.set_message(cont.msg);
-
-    stub.ToBusinessLayer(&cntl, &request, &response, nullptr);
-
-    if(!cntl.Failed() && response.status() == ROUTE_STATUS_OK) {
-        LOG(INFO) << "Send 2 RouteServer sucessful";
-        return true;
-    }
-
-    LOG(ERROR) << "Fail to Send msg 2 RouteServer";
-    return false;
 }
 
 bool ConRoute::firstSend() {
@@ -105,12 +85,12 @@ bool ConRoute::firstSend() {
     brpc::Controller cntl;
 
     std::string msg = "{"
-                            "\"name\" : \"" + _gate_server_name + "\", "
-                            "\"port\" : " + _gate_server_port +
+                            "\"name\" : \"" + _im_server_name + "\", "
+                            "\"port\" : " + _im_server_port +
                        "}";
 
     request.set_message(msg);
-    request.set_flag(FLAG_GATE_SERVER);
+    request.set_flag(FLAG_IM_SERVER);
 
     stub.FirstSend(&cntl, &request, &response, nullptr);
     if(cntl.Failed()) {
@@ -118,8 +98,8 @@ bool ConRoute::firstSend() {
         return false;
     }
    
-    LOG(INFO) << _gate_server_name << ": Register successful in LoginServer";
+    LOG(INFO) << _im_server_name << ": Register successful in LoginServer";
     return true;
 }
 
-}    /// namesapce YTalk
+}   //// namespce YTalk
