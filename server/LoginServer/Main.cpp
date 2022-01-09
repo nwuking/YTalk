@@ -44,12 +44,14 @@ int main(int argc, char *argv[])
         LOG(ERROR) << "Fail to init LoginServiceImpl";
         return 2;
     }
+    LOG(INFO) << "Initializate LoginServiceImpl";
 
     ::YTalk::AuthServiceImpl authService;
     if(authService.init(&confParse, session)) {
         LOG(ERROR) << "Fail to init AuthServiceImpl";
         return 3;
     }
+    LOG(INFO) << "Initializate AuthServiceImpl";
 /*
     /// for test
     brpc::Controller cntl;
@@ -97,6 +99,10 @@ int main(int argc, char *argv[])
 
     options.method_max_concurrency = "auto";
 
+    LOG(INFO) << "ServerOption: {num_threads:" << options.num_threads << ", "
+                            <<  "max_concurrency:" << options.max_concurrency << ", "
+                            <<  "method_max_concurrency:" << options.method_max_concurrency;
+
     std::string ip, client_listen_port, gate_listen_port;
     confParse.getValue(FLAGS_ip, ip);
     confParse.getValue(FLAGS_client_port, client_listen_port);
@@ -121,9 +127,10 @@ int main(int argc, char *argv[])
     http_server.RunUntilAskedToQuit();
     server.RunUntilAskedToQuit();
 
-    if(newSink) {
-        delete newSink;
-    }
+    LOG(INFO) << "Server ending";
+    
+    delete newSink;
+    
     ::YTalk::Session::freeSession();
     return 0;
 }

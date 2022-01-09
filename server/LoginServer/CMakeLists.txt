@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 2.8.10)
 project(YTalk_Login_Server)
 
+## for include
+set(BASE_INCLUDE ${PROJECT_SOURCE_DIR}/../)
+set(DBPROXY_INCLUDE ${PROJECT_SOURCE_DIR}/../)
+set(PROTO_INCLUDE ${PROJECT_SOURCE_DIR}/)
+set(BRPC_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/brpc/include/)
+##set(MYSQL_INCLUDE /usr/include/)
+###set(REDIS_INCLUDE /usr/local/include/)
+set(RAPIDJSON_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/)
+set(LOGINSERVER_INCLUDE ${PROJECT_SOURCE_DIR}/)
+
 set(SOURCES 
     AccessMySql.cpp 
     LoginService.cpp  
@@ -8,17 +18,8 @@ set(SOURCES
     Session.cpp   
     protobuf/login.pb.cc  
     protobuf/auth.pb.cc  
+    ${DBPROXY_INCLUDE}/DBProxyServer/protobuf/mysql.pb.cc 
     )
-
-## for include
-set(BASE_INCLUDE ${PROJECT_SOURCE_DIR}/../)
-set(DBPROXY_INCLUDE ${PROJECT_SOURCE_DIR}/../)
-set(PROTO_INCLUDE ${PROJECT_SOURCE_DIR}/)
-set(BRPC_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/brpc/include/)
-set(MYSQL_INCLUDE /usr/include/)
-set(REDIS_INCLUDE /usr/local/include/)
-set(RAPIDJSON_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/)
-set(LOGINSERVER_INCLUDE ${PROJECT_SOURCE_DIR}/)
 
 
 ## for CMAKE_CXX_FLAGS
@@ -29,10 +30,9 @@ add_library(LoginServer-static STATIC ${SOURCES})
 target_include_directories(LoginServer-static 
                     PUBLIC ${BASE_INCLUDE} 
                            ${DBPROXY_INCLUDE} 
-                           ${MYSQL_INCLUDE} 
                            ${BRPC_INCLUDE} 
                            ${PROTO_INCLUDE} 
-                           ${REDIS_INCLUDE} 
                            ${RAPIDJSON_INCLUDE}
-                           ${LOGINSERVER_INCLUDE})
+                           ${LOGINSERVER_INCLUDE}
+                           )
 set_target_properties(LoginServer-static PROPERTIES OUTPUT_NAME LoginServer CLEAN_DIRECT_OUTPUT 1)

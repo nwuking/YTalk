@@ -107,15 +107,14 @@ int LoginServiceImpl::init(ConfigParse *cParse, Session *session) {
     _session = session;
     _accessMySql = new AccessMySql();
     if(!_accessMySql) {
-        LOG(ERROR) << "new AccessMySql Fail";
+        LOG(ERROR) << "Fail to new AccessMySql";
         return 1;
     }
     if(_accessMySql->init(cParse)) {
-        LOG(ERROR) << "AccessMySql init fail";
+        LOG(ERROR) << "Fail to initializate AccessMySql";
         return 2;
     }
     return 0;
-    //TODO
 }
 
 }    //   namespace YTalk
