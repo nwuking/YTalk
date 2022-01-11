@@ -14,6 +14,7 @@ namespace YTalk
 
 class TokenGenerator
 {
+public:
     static std::string generateToken() {
         //TODO
     }
