@@ -18,7 +18,7 @@ public:
         std::size_t counts = ciphertext.size() / 4 - 1;
         const char *str = ciphertext.c_str();
         char c_groups[3];
-        std::uint8_t ui_groups[4];
+        char ui_groups[4];
         while(counts) {
             bcopy(str, ui_groups, 4);
             bzero(c_groups, 3);
@@ -108,7 +108,7 @@ public:
         std::size_t n = plaintext.size() % 3;
 
         char c_groups[3];
-        std::uint8_t ui_groups[4];
+        char ui_groups[4];
         while(counts) {
             bcopy(str, c_groups, 3);
             bzero(ui_groups, 4);

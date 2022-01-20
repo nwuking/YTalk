@@ -14,6 +14,17 @@
 namespace YTalk
 {
 
+typedef struct {
+    int year;
+    int month;
+    int day_of_week;
+    int day_of_month;
+    int hour;
+    int minute;
+    int second;
+    int millisecond;
+} Exploded;
+
 class Time
 {
 public:
@@ -25,6 +36,8 @@ public:
 
     std::string timeToStringUTC() const;
     std::string timeToStringLocal() const;
+
+    //Time addTime(const Exploded &exploded);
 
 private:
     Time(const butil::Time &that);
