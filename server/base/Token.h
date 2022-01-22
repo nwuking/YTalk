@@ -11,6 +11,8 @@
 
 #include "Base64.h"
 #include "Time.h"
+#include "Key.h"
+#include "Signature.h"
 
 namespace YTalk
 {
@@ -36,7 +38,8 @@ public:
         std::string plaintext = header_cip + "." + payload_cip;
 
         std::string signature;
-        //TODO
+        Signature::sign(plaintext, signature);
+        
         return (plaintext + "." + signature);
     }
 
