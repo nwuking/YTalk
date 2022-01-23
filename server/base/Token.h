@@ -35,19 +35,27 @@ public:
         std::string payload_cip;
         Base64::encode(payload, payload_cip);
 
-        std::string plaintext = header_cip + "." + payload_cip;
+        std::string digest = header_cip + "." + payload_cip;
 
         std::string signature;
-        Signature::sign(plaintext, signature);
-        
-        return (plaintext + "." + signature);
+        Signature::sign(digest, signature);
+    
+        return (digest + "." + signature);
     }
 
     static const std::string header;
 };
 
+class TokenVerify
+{
+public:
+    static bool verifyToken() {
+        //TODO
+    }
+};
+
 const std::string TokenGenerator::header = "{"
-                                                "\"alg\": \"HS256\","
+                                                "\"alg\": \"SHA3-512\","
                                                 "\"typ\": \"JWT\""
                                            "}";
 
