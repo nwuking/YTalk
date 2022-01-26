@@ -100,6 +100,21 @@ void LoginServiceImpl::Register(::google::protobuf::RpcController* controller,
                        ::LoginServer::HttpResponse* response,
                        ::google::protobuf::Closure* done)
 {
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
+
+    std::string reqMsg = cntl->request_attachment().to_string();
+    if(reqMsg.empty()) {
+        cntl->http_response().set_status_code(brpc::HTTP_STATUS_BAD_REQUEST);
+        return;
+    }
+
+    rapidjson::Document document;
+    if(document.Parse(reqMsg.c_str()).HasParseError()) {
+        LOG(ERROR) << "Fail to parse json";
+        cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        return;
+    }
     //TODO
 }
 
@@ -114,6 +129,8 @@ int LoginServiceImpl::init(ConfigParse *cParse, Session *session) {
         LOG(ERROR) << "Fail to initializate AccessMySql";
         return 2;
     }
+
+    //TODO: 从user中获取u_id最大值
     return 0;
 }
 

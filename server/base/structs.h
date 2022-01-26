@@ -25,6 +25,11 @@ enum MySqlStatus {
     MYSQL_UPDATE_FAIL,
     MYSQL_OPTION_NOT_USE,
 };
+enum DBProxyStatus {
+    DBPROXY_SUCCESS = 0,
+    DBPROXY_DEFECT_DB,
+    DBPROXY_CONN_ERROR
+};
 
 enum LoginStatus {
     LOGIN_SUCCESS = 0,
@@ -33,6 +38,11 @@ enum LoginStatus {
     LOGIN_SERVER_ERROR,
     LOGIN_RPC_FAIL,
     LOGIN_CLIENT_ERROR
+};
+
+enum RegisterStatus {
+    REGISTER_SUCCESS = 0,
+    REGISTER_CLIENT_ERROR
 };
 
 enum IMFLAG {

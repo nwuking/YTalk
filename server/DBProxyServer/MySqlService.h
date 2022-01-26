@@ -34,6 +34,11 @@ public:
                        ::DBProxyServer::MySqlResponse* response,
                        ::google::protobuf::Closure* done);
 
+    virtual void GetMaxUserId(::google::protobuf::RpcController* controller,
+                       const ::DBProxyServer::MySqlRequest* request,
+                       ::DBProxyServer::MySqlResponse* response,
+                       ::google::protobuf::Closure* done);
+
     int init(const std::string &configFile);
     int init(ConfigParse *cParse);
     //TODO

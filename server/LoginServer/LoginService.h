@@ -8,6 +8,8 @@
 #ifndef YTALK_LOGINSERVICE_H
 #define YTALK_LOGINSERVICE_H
 
+#include <atomic>
+
 #include "protobuf/login.pb.h"
 
 namespace YTalk
@@ -38,6 +40,8 @@ public:
 private:
     AccessMySql *_accessMySql;
     Session *_session;
+
+    std::atomic_int _baseUserId{0};
 
 };    // class LoginServiceImpl
 

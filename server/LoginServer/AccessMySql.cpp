@@ -115,4 +115,12 @@ int AccessMySql::updateForRegister(const UserRegisterInfo &register_info) {
     //TODO
 }
 
+int AccessMySql::getMaxUserId() {
+    DBProxyServer::MySqlRequest request;
+    DBProxyServer::MySqlResponse response;
+    brpc::Controller cntl;
+    //TODO
+    return 0;
+}
+
 }    // namesapce YTalk

@@ -25,6 +25,7 @@
 
 /////
 #define USERACCOUNT "YTalk"
+#define USER "YTalk"
 
 namespace YTalk
 {
@@ -103,6 +104,33 @@ void MySqlServiceImpl::Register(::google::protobuf::RpcController* controller,
     ::brpc::ClosureGuard done_guard(done);
     ::brpc::Controller *cntl = static_cast<::brpc::Controller*>(controller);
     //////TODO
+}
+
+void MySqlServiceImpl::GetMaxUserId(::google::protobuf::RpcController* controller,
+                       const ::DBProxyServer::MySqlRequest* request,
+                       ::DBProxyServer::MySqlResponse* response,
+                       ::google::protobuf::Closure* done)
+{
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
+
+    std::unordered_map<std::string, MySqlPool*>::iterator it = _MysqlPool_map.find(USER);
+    if(it == _MysqlPool_map.end()) {
+        LOG(ERROR) << "Defect db: " << USER;
+        response->set_status(DBPROXY_DEFECT_DB);
+        return;
+    }
+
+    MySqlPool *pool = it->second;
+    MySqlConn *conn = pool->getMySqlConn();
+    if(!conn) {
+        LOG(ERROR) << "MySqlConn unuseful in:" << pool->getDBName();
+        response->set_status(DBPROXY_CONN_ERROR);
+        return;
+    }
+
+    std::string query = "";
+    //TODO
 }
 
 int MySqlServiceImpl::init(const std::string &configFile) {

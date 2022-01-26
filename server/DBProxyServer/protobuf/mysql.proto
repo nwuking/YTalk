@@ -15,5 +15,6 @@ message MySqlResponse {
 service MySqlService {
     rpc Login(MySqlRequest) returns (MySqlResponse);
     rpc Register(MySqlRequest) returns (MySqlResponse);
+    rpc GetMaxUserId(MySqlRequest) returns (MySqlResponse);
 };
 

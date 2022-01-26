@@ -31,6 +31,8 @@ public:
     //int updateForRegister(const std::string &username, const std::string &password);
     int updateForRegister(const UserRegisterInfo &register_info);
 
+    int getMaxUserId();
+
 private:
     std::string _dbProxyServer_ip;
     std::string _dbProxyServer_port_str;
