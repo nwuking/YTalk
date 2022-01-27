@@ -11,6 +11,7 @@
 #include <atomic>
 
 #include "protobuf/login.pb.h"
+#include "base/Mutex.h"
 
 namespace YTalk
 {
@@ -42,6 +43,8 @@ private:
     Session *_session;
 
     std::atomic_int _baseUserId{0};
+
+    Mutex _mutex;
 
 };    // class LoginServiceImpl
 

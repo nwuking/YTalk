@@ -18,10 +18,17 @@
 #define USERNAME "username"
 #define PASSWORD "password"
 
+#define U_NAME "u_name"
+#define U_NICKNAME "u_nickname"
+#define U_PASSWORD "u_password"
+#define U_GENDER "u_gender"
+#define U_BIRTHDAY "u_birthday"
+#define U_SIGNATURE "u_signature"
+
 namespace YTalk
 {
 
-LoginServiceImpl::LoginServiceImpl() {
+LoginServiceImpl::LoginServiceImpl() :_mutex() {
     _accessMySql = nullptr;
     _session = nullptr;
 }
@@ -115,7 +122,69 @@ void LoginServiceImpl::Register(::google::protobuf::RpcController* controller,
         cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
         return;
     }
-    //TODO
+
+    UserRegisterInfo userRegisterInfo;
+    //std::string u_name, u_nickname, u_password;
+    rapidjson::Value::MemberIterator it1 = document.FindMember(U_NAME);
+    rapidjson::Value::MemberIterator it2 = document.FindMember(U_NICKNAME);
+    rapidjson::Value::MemberIterator it3 = document.FindMember(U_PASSWORD);
+    if(it1 == document.MemberEnd() || it2 == document.MemberEnd() || it3 == document.MemberEnd()) {
+        cntl->http_response().set_status_code(brpc::HTTP_STATUS_BAD_REQUEST);
+        return;
+    }
+    userRegisterInfo.u_name = it1->value.GetString();
+    userRegisterInfo.u_nickname = it2->value.GetString();
+    userRegisterInfo.u_password = it3->value.GetString();
+
+    //int u_id;
+    {
+        MutexLock lock(_mutex);
+        ++_baseUserId;
+        userRegisterInfo.u_id = _baseUserId;
+    }
+
+    //std::string u_gender;
+    it1 = document.FindMember(U_GENDER);
+    if(it1 == document.MemberEnd()) {
+        userRegisterInfo.u_gender = "1";
+    }
+    else {
+        userRegisterInfo.u_gender = it1->value.GetString();
+    }
+
+    //int u_birthday;
+    it1 = document.FindMember(U_BIRTHDAY);
+    if(it1 == document.MemberEnd()) {
+        userRegisterInfo.u_birthday = 20220101;
+    }
+    else {
+        userRegisterInfo.u_birthday = it1->value.GetInt();
+    }
+
+    /*it1 = document.FindMember(U_SIGNATURE);
+    if(it1 != document.MemberEnd()) {
+        userRegisterInfo.u_signature = it1->value.GetString();
+    }*/
+
+    NewUserInfo *newUser = _accessMySql->updateForRegister(userRegisterInfo);
+    if(!newUser) {
+        LOG(ERROR) << "NewUserInfo is nullptr";
+        cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        return;
+    }
+    if(newUser->status) {
+        //fail
+        LOG(ERROR) << "Fail to register";
+        cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        //TODO
+    }
+    else {
+        //success
+        LOG(INFO) << "Success to register: " << newUser->u_id;
+        cntl->http_response().set_status_code(brpc::HTTP_STATUS_OK);
+        //TODO: 返回一些信息给客户端？
+    }
+    delete newUser;
 }
 
 int LoginServiceImpl::init(ConfigParse *cParse, Session *session) {
@@ -130,7 +199,12 @@ int LoginServiceImpl::init(ConfigParse *cParse, Session *session) {
         return 2;
     }
 
-    //TODO: 从user中获取u_id最大值
+    //从user中获取u_id最大值
+    _baseUserId = _accessMySql->getMaxUserId();
+    if(_baseUserId == -1) {
+        LOG(ERROR) << "Fail to init, _baseUserId = -1";
+        return 3;
+    }
     return 0;
 }
 

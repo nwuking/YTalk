@@ -29,7 +29,8 @@ public:
     int queryForLogin(const std::string &username, const std::string &password);
 
     //int updateForRegister(const std::string &username, const std::string &password);
-    int updateForRegister(const UserRegisterInfo &register_info);
+    //int updateForRegister(const UserRegisterInfo &register_info);
+    NewUserInfo* updateForRegister(const UserRegisterInfo &userRegisterInfo);
 
     int getMaxUserId();
 

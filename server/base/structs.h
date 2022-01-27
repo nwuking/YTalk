@@ -27,8 +27,9 @@ enum MySqlStatus {
 };
 enum DBProxyStatus {
     DBPROXY_SUCCESS = 0,
-    DBPROXY_DEFECT_DB,
-    DBPROXY_CONN_ERROR
+    DBPROXY_SERVER_ERROR,
+    DBPROXY_CLIENT_ERROR,
+    DBPROXY_FAIL
 };
 
 enum LoginStatus {
@@ -70,10 +71,29 @@ enum GATE_STATUS {
 };
 
 struct UserRegisterInfo {
-    std::string password;
+    int u_id;
+    std::string u_name;
+    std::string u_nickname;
+    std::string u_password;
+    std::string u_gender;
+    int u_birthday;
+    //std::string u_signature;
     //TODO
 };
 
+struct NewUserInfo {
+    int status;
+    int u_id;
+    //TODO
+};
+
+#define U_ID "u_id"
+#define U_NAME "u_name"
+#define U_NICKNAME "u_nickname"
+#define U_PASSWORD "u_password"
+#define U_GENDER "u_gender"
+#define U_BIRTHDAY "u_birthday"
+#define U_SIGNATURE "u_signature"
 
 }     /// namespace YTalk
 

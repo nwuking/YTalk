@@ -26,6 +26,7 @@
 /////
 #define USERACCOUNT "YTalk"
 #define USER "YTalk"
+#define GETMAXUID_KEY "u_id"
 
 namespace YTalk
 {
@@ -103,7 +104,58 @@ void MySqlServiceImpl::Register(::google::protobuf::RpcController* controller,
 {
     ::brpc::ClosureGuard done_guard(done);
     ::brpc::Controller *cntl = static_cast<::brpc::Controller*>(controller);
-    //////TODO
+
+    rapidjson::Document document;
+    document.Parse(request->message().c_str());
+/*{
+    "u_id": 11111,
+    "u_name": "181764****0",
+    "u_nickname": "nwuking",
+    "u_password": "************",
+    "u_gender": "1",
+    "u_birthday": 20220101,
+}*/
+    if(!document.HasMember(U_ID) || !document.HasMember(U_NAME) || !document.HasMember(U_NICKNAME) || !document.HasMember(U_PASSWORD)) {
+        LOG(ERROR) << "Bad request";
+        response->set_status(DBPROXY_CLIENT_ERROR);
+        return;
+    }
+    int u_id = document[U_ID].GetInt();
+    std::string u_name = document[U_NAME].GetString();
+    std::string u_nickname = document[U_NICKNAME].GetString();
+    std::string u_password = document[U_PASSWORD].GetString();
+    std::string u_gender = document[U_GENDER].GetString();
+    int u_birthday = document[U_BIRTHDAY].GetInt();
+    //std::string u_signature = document[U_SIGNATURE].GetString();
+
+    std::unordered_map<std::string, MySqlPool*>::iterator it = _MysqlPool_map.find(USER);
+    if(it == _MysqlPool_map.end()) {
+        LOG(ERROR) << "Defect db: " << USER;
+        response->set_status(DBPROXY_SERVER_ERROR);
+        return;
+    }
+    MySqlPool *pool = it->second;
+    MySqlConn *conn = pool->getMySqlConn();
+    if(!conn) {
+        LOG(ERROR) << "MySqlConn unuseful in:" << pool->getDBName();
+        response->set_status(DBPROXY_SERVER_ERROR);
+        return;
+    }
+
+    char query[256] = {0};  
+    snprintf(query, 256, "INSERT INTO user(u_id, u_name, u_nickname, u_password, u_gender, u_birthday) "
+                        "VALUES(%d, '%s', '%s', '%s', '%s', %d, NOW())", u_id, u_name.c_str(), u_nickname.c_str(), 
+                                                              u_password.c_str(), u_gender.c_str(), u_birthday);
+    if(!conn->executeUpdate(query)) {
+        LOG(ERROR) << "insert user err: " << query;
+        response->set_status(DBPROXY_SERVER_ERROR);
+    }
+    else {
+        LOG(INFO) << "insert user success: " << query;
+        response->set_status(DBPROXY_SUCCESS);
+    }
+
+    pool->retMySqlConn(conn);
 }
 
 void MySqlServiceImpl::GetMaxUserId(::google::protobuf::RpcController* controller,
@@ -117,7 +169,7 @@ void MySqlServiceImpl::GetMaxUserId(::google::protobuf::RpcController* controlle
     std::unordered_map<std::string, MySqlPool*>::iterator it = _MysqlPool_map.find(USER);
     if(it == _MysqlPool_map.end()) {
         LOG(ERROR) << "Defect db: " << USER;
-        response->set_status(DBPROXY_DEFECT_DB);
+        response->set_status(DBPROXY_SERVER_ERROR);
         return;
     }
 
@@ -125,12 +177,33 @@ void MySqlServiceImpl::GetMaxUserId(::google::protobuf::RpcController* controlle
     MySqlConn *conn = pool->getMySqlConn();
     if(!conn) {
         LOG(ERROR) << "MySqlConn unuseful in:" << pool->getDBName();
-        response->set_status(DBPROXY_CONN_ERROR);
+        response->set_status(DBPROXY_SERVER_ERROR);
         return;
     }
 
-    std::string query = "";
-    //TODO
+    std::string query = "select MAX(u_id) as u_id from user";
+    MResultSet *set = conn->executeQuery(query.c_str());
+    if(!set) {
+        LOG(ERROR) << "MResultSet is nullptr";
+        response->set_status(DBPROXY_SERVER_ERROR);
+        pool->retMySqlConn(conn);
+        return;
+    }
+
+    int uid;
+    if(set->next()) {
+        uid = set->getInt(GETMAXUID_KEY);
+        std::string uid_str = std::to_string(uid);
+
+        response->set_message(uid_str);
+    }
+    else {
+        response->set_message("0");
+    }
+    response->set_status(DBPROXY_SUCCESS);
+
+    MResultSet::freeMResultSet(set);
+    pool->retMySqlConn(conn);
 }
 
 int MySqlServiceImpl::init(const std::string &configFile) {
