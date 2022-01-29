@@ -1,4 +1,4 @@
-all : mysql_test redis_test
+all : mysql_test redis_test getMaxUserId
 .PHONY : all
 
 CXX=g++
@@ -46,6 +46,12 @@ redis_test : redis_test.o
 
 redis_test.o : redis_test.cpp 
 	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o redis_test.o
+
+getMaxUserId : getMaxUserId.o 
+	$(CXX) $(LIBPATHS) $(LINK_OPTIONS) -o getMaxUserId
+
+getMaxUserId.o : getMaxUserId.cpp 
+	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o getMaxUserId.o
 
 
 clean:

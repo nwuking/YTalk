@@ -190,15 +190,14 @@ void MySqlServiceImpl::GetMaxUserId(::google::protobuf::RpcController* controlle
         return;
     }
 
-    int uid;
     if(set->next()) {
-        uid = set->getInt(GETMAXUID_KEY);
-        std::string uid_str = std::to_string(uid);
-
-        response->set_message(uid_str);
-    }
-    else {
-        response->set_message("0");
+        char* u_id = set->getString(GETMAXUID_KEY);
+        if(u_id == nullptr) {
+            response->set_message("0");
+        }
+        else {
+            response->set_message(u_id);
+        }
     }
     response->set_status(DBPROXY_SUCCESS);
 
