@@ -1,4 +1,4 @@
-all : mysql_test redis_test getMaxUserId
+all : mysql_test redis_test getMaxUserId register
 .PHONY : all
 
 CXX=g++
@@ -52,6 +52,13 @@ getMaxUserId : getMaxUserId.o
 
 getMaxUserId.o : getMaxUserId.cpp 
 	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o getMaxUserId.o
+
+
+register : register.o 
+	$(CXX) $(LIBPATHS) $(LINK_OPTIONS) -o register
+
+register.o : register.cpp 
+	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o register.o
 
 
 clean:

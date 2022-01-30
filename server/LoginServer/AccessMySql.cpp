@@ -184,6 +184,8 @@ int AccessMySql::getMaxUserId() {
     brpc::Controller cntl;
 
     DBProxyServer::MySqlService_Stub stub(&_channel);
+
+    request.set_message("1");
     stub.GetMaxUserId(&cntl, &request, &response, nullptr);
 
     if(!cntl.Failed()) {

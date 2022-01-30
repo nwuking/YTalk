@@ -143,7 +143,7 @@ void MySqlServiceImpl::Register(::google::protobuf::RpcController* controller,
     }
 
     char query[256] = {0};  
-    snprintf(query, 256, "INSERT INTO user(u_id, u_name, u_nickname, u_password, u_gender, u_birthday) "
+    snprintf(query, 256, "INSERT INTO user(u_id, u_name, u_nickname, u_password, u_gender, u_birthday, u_rg_time) "
                         "VALUES(%d, '%s', '%s', '%s', '%s', %d, NOW())", u_id, u_name.c_str(), u_nickname.c_str(), 
                                                               u_password.c_str(), u_gender.c_str(), u_birthday);
     if(!conn->executeUpdate(query)) {

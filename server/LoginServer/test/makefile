@@ -1,4 +1,4 @@
-all : access_mysql_test testForLogin testForFirstSend testForNotify testForServer
+all : access_mysql_test testForLogin testForFirstSend testForNotify testForServer testForRegister
 .PHONY : all
 
 BRPC_PATH=/root/YTalk/thirdparty
@@ -64,6 +64,12 @@ testForServer:testForServer.o
 
 testForServer.o:testForServer.cpp 
 	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o testForServer.o
+
+testForRegister:testForRegister.o  
+	$(CXX) $(LIBPATHS) $(LINK_OPTIONS) -o testForRegister
+
+testForRegister.o:testForRegister.cpp 
+	$(CXX) -c $(HDRPATHS) $(CXXFLAGS) $< -o testForRegister.o
 
 
 clean:

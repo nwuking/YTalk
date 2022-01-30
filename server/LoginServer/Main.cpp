@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     signal(SIGPIPE, SIG_IGN);
 
     /// for LOG
-    ::logging::LogSink *newSink = ::YTalk::Logger::getInstance(FLAGS_log_config.c_str());
+    ::logging::LogSink *newSink = ::YTalk::Logger::getInstance(/*FLAGS_log_config.c_str()*/);
     ::logging::LogSink *oldSink = ::logging::SetLogSink(newSink);
 
     ::YTalk::ConfigParse confParse;

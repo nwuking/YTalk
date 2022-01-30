@@ -18,13 +18,6 @@
 #define USERNAME "username"
 #define PASSWORD "password"
 
-#define U_NAME "u_name"
-#define U_NICKNAME "u_nickname"
-#define U_PASSWORD "u_password"
-#define U_GENDER "u_gender"
-#define U_BIRTHDAY "u_birthday"
-#define U_SIGNATURE "u_signature"
-
 namespace YTalk
 {
 
@@ -132,10 +125,11 @@ void LoginServiceImpl::Register(::google::protobuf::RpcController* controller,
         cntl->http_response().set_status_code(brpc::HTTP_STATUS_BAD_REQUEST);
         return;
     }
+
     userRegisterInfo.u_name = it1->value.GetString();
     userRegisterInfo.u_nickname = it2->value.GetString();
     userRegisterInfo.u_password = it3->value.GetString();
-
+LOG(INFO) << "KAKAK1";
     //int u_id;
     {
         MutexLock lock(_mutex);
@@ -165,7 +159,7 @@ void LoginServiceImpl::Register(::google::protobuf::RpcController* controller,
     if(it1 != document.MemberEnd()) {
         userRegisterInfo.u_signature = it1->value.GetString();
     }*/
-
+LOG(INFO) << "KAKAKA2";
     NewUserInfo *newUser = _accessMySql->updateForRegister(userRegisterInfo);
     if(!newUser) {
         LOG(ERROR) << "NewUserInfo is nullptr";

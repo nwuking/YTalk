@@ -8,7 +8,7 @@
 /* 用户信息表 */
 CREATE TABLE IF NOT EXISTS user (
     u_id INT NOT NULL COMMENT '用户id',
-    u_name CHAR(10) NOT NULL COMMENT '用户名',
+    u_name CHAR(11) NOT NULL COMMENT '用户名',
     u_nickname VARCHAR(50) NOT NULL COMMENT '用户昵称',
     u_password VARCHAR(50) NOT NULL COMMENT '用户密码',
     u_gender CHAR(1) DEFAULT '0' COMMENT '用户性别',
