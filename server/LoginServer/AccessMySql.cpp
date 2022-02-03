@@ -46,8 +46,8 @@ int AccessMySql::queryForLogin(const std::string &username, const std::string &p
     rapidjson::Value password_v;
     username_v.SetString(username.c_str(), username.size(), document.GetAllocator());
     password_v.SetString(password.c_str(), password.size(), document.GetAllocator());
-    document.AddMember("username", username_v, document.GetAllocator());
-    document.AddMember("password", password_v, document.GetAllocator());
+    document.AddMember("u_name", username_v, document.GetAllocator());
+    document.AddMember("u_password", password_v, document.GetAllocator());
 
     rapidjson::StringBuffer sb;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);

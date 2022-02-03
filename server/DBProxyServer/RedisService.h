@@ -30,7 +30,17 @@ public:
     RedisServiceImpl();
     virtual ~RedisServiceImpl();
 
-    virtual void Request(::google::protobuf::RpcController* controller,
+    virtual void ReqForOnline(::google::protobuf::RpcController* controller,
+                       const ::DBProxyServer::RedisRequest* request,
+                       ::DBProxyServer::RedisResponse* response,
+                       ::google::protobuf::Closure* done);
+
+    virtual void ReqForToken(::google::protobuf::RpcController* controller,
+                       const ::DBProxyServer::RedisRequest* request,
+                       ::DBProxyServer::RedisResponse* response,
+                       ::google::protobuf::Closure* done);
+
+    virtual void SetToken(::google::protobuf::RpcController* controller,
                        const ::DBProxyServer::RedisRequest* request,
                        ::DBProxyServer::RedisResponse* response,
                        ::google::protobuf::Closure* done);
@@ -38,33 +48,6 @@ public:
     int init(const std::string &configFile);
     int init(ConfigParse *cParse);
     //TODO
-
-    /// for test
-    std::string get(const std::string &redis, const std::string &key) {
-        std::unordered_map<std::string, RedisPool*>::iterator it = _redis_pool_map.find(redis);
-        if(it == _redis_pool_map.end()) {
-            return std::string();
-        }
-
-        RedisPool *p = it->second;
-        RedisConn *c = p->getRedisConn();
-        std::string ret = c->get(key.c_str());
-        p->retRedisConn(c);
-        return ret;
-    }
-    std::string set(const std::string &redis, const std::string &key, const std::string &value) {
-        std::unordered_map<std::string, RedisPool*>::iterator it = _redis_pool_map.find(redis);
-        if(it == _redis_pool_map.end()) {
-            return std::string();
-        }
-
-        RedisPool *p = it->second;
-        RedisConn *c = p->getRedisConn();
-        std::string ret = c->set(key.c_str(), value.c_str());
-        p->retRedisConn(c);
-        return ret;
-    }
-    /// for test end
 
 private:
     std::unordered_map<std::string, RedisPool*> _redis_pool_map;

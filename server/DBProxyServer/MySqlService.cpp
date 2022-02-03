@@ -19,12 +19,8 @@
 #define MYSQL_QUERY "query"
 #define MYSQL_UPDATE "update"
 
-// for json
-#define USERNAME "username"
-#define PASSWORD "password"
-
 /////
-#define USERACCOUNT "YTalk"
+//#define USERACCOUNT "YTalk"
 #define USER "YTalk"
 #define GETMAXUID_KEY "u_id"
 
@@ -43,58 +39,58 @@ void MySqlServiceImpl::Login(::google::protobuf::RpcController* controller,
                             ::DBProxyServer::MySqlResponse* response,
                             ::google::protobuf::Closure* done)
 {
-    ::brpc::ClosureGuard done_guard(done);
-    ::brpc::Controller *cntl = static_cast<::brpc::Controller*>(controller);
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<::brpc::Controller*>(controller);
 
     rapidjson::Document document;
     document.Parse(request->message().c_str());
-    if(!document.HasMember(USERNAME) || !document.HasMember(PASSWORD)) {
-        response->set_status(LOGIN_JSON_DEFECT_U_OR_P);
+    if(!document.HasMember(U_NAME) || !document.HasMember(U_PASSWORD)) {
+        response->set_status(DBPROXY_CLIENT_ERROR);
         return;
     }
 
-    std::string username = document[USERNAME].GetString();
-    std::string password = document[PASSWORD].GetString();
+    std::string username = document[U_NAME].GetString();
+    std::string password = document[U_PASSWORD].GetString();
 
-    std::unordered_map<std::string, MySqlPool*>::iterator it = _MysqlPool_map.find(USERACCOUNT);
+    std::unordered_map<std::string, MySqlPool*>::iterator it = _MysqlPool_map.find(USER);
     if(it == _MysqlPool_map.end()) {
-        LOG(ERROR) << "Defect db: " << USERACCOUNT;
-        response->set_status(LOGIN_SERVER_ERROR);
+        LOG(ERROR) << "Defect db: " << USER;
+        response->set_status(DBPROXY_SERVER_ERROR);
         return;
     }
-    MySqlPool *userAccount = it->second;
-    MySqlConn *conn = userAccount->getMySqlConn();
+    MySqlPool *pool = it->second;
+    MySqlConn *conn = pool->getMySqlConn();
     if(!conn) {
-        LOG(ERROR) << "MySqlConn unuseful in:" << userAccount->getDBName();
-        response->set_status(LOGIN_SERVER_ERROR);
+        LOG(ERROR) << "MySqlConn unuseful in:" << pool->getDBName();
+        response->set_status(DBPROXY_SERVER_ERROR);
         return;
     }
 
-    std::string query = "select User_password from UserAccount where User_name=\"" + username+"\"";
+    std::string query = "SELECT u_password FROM user WHERE u_name='" + username+"'";
     MResultSet *set = conn->executeQuery(query.c_str());
     if(!set) {
         LOG(ERROR) << "MResultSet is nullptr";
-        response->set_status(LOGIN_SERVER_ERROR);
-        userAccount->retMySqlConn(conn);
+        response->set_status(DBPROXY_SERVER_ERROR);
+        pool->retMySqlConn(conn);
         return;
     }
 
     std::string p;
     while(set->next()) {
-        p = set->getString("User_password");
+        p = set->getString(U_PASSWORD);
         if(p == password) {
             break;    
         }
     }
     if(p == password) {
-        response->set_status(LOGIN_SUCCESS);
+        response->set_status(DBPROXY_SUCCESS);
     }
     else {
-        response->set_status(LOGIN_FAIL);
+        response->set_status(DBPROXY_FAIL);
     }
 
     MResultSet::freeMResultSet(set);
-    userAccount->retMySqlConn(conn);
+    pool->retMySqlConn(conn);
 }
 
 void MySqlServiceImpl::Register(::google::protobuf::RpcController* controller,

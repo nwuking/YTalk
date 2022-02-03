@@ -79,7 +79,7 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
         //访问redis，查询该账号是否在线
         int redis_status = _accessRedis->queryForOnline(u_name);
         if(redis_status == REDIS_IS_ONLINE) {
-            //TODO:踢人
+            //TODO:踢人, del token
         }
         else if(redis_status != REDIS_SUCCESS) {
             cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
@@ -91,6 +91,12 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
         redis_status = _accessRedis->queryForToken(u_name, token);
         if(redis_status == REDIS_NO_TOKEN) {
             token = TokenGenerator::generateToken(u_name);
+            //TODO:将token写到redis，有时间限制
+            redis_status = _accessRedis->setToken(u_name, token);
+            if(redis_status != REDIS_SUCCESS) {
+                cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
+                return;
+            }
         }
         else if(redis_status != REDIS_SUCCESS) {
             cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);

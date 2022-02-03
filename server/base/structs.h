@@ -28,7 +28,9 @@ enum MySqlStatus {
 enum RedisStatus {
     REDIS_SUCCESS = 0,
     REDIS_IS_ONLINE,
-    REDIS_NO_TOKEN
+    REDIS_NO_TOKEN,
+    REDIS_CLIENT_ERROR,
+    REDIS_SERVER_ERROR
 };
 enum DBProxyStatus {
     DBPROXY_SUCCESS = 0,
@@ -99,6 +101,8 @@ struct NewUserInfo {
 #define U_GENDER "u_gender"
 #define U_BIRTHDAY "u_birthday"
 #define U_SIGNATURE "u_signature"
+
+#define U_TOKEN "token"
 
 
 #define DB_PROXY_SERVER_IP "db_proxy_server_ip"

@@ -15,4 +15,5 @@ message RedisResponse {
 service RedisService {
     rpc ReqForOnline(RedisRequest) returns (RedisResponse);
     rpc ReqForToken(RedisRequest) returns (RedisResponse);
+    rpc SetToken(RedisRequest) returns (RedisResponse);
 };

@@ -29,6 +29,8 @@ public:
 
     int queryForToken(const std::string &u_name, std::string &token);
 
+    int setToken(const std::string &u_name, const std::string &token);
+
 private:
     Channel *_channel;
 

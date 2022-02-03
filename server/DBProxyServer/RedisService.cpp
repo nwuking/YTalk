@@ -8,10 +8,15 @@
 #include "RedisPool.h"
 #include "base/ConfigParse.h"
 #include "base/Logging.h"
+#include "brpc/server.h"
+#include "base/structs.h"
+#include "rapidjson/document.h"
 
 #include <vector>
 
 #define CACHEINSTANCES_KEY "RedisInstances"
+#define ONLINE "online"
+#define TOKEN "token"
 
 namespace YTalk
 {
@@ -29,12 +34,141 @@ RedisServiceImpl::~RedisServiceImpl() {
     }
 }
 
-void RedisServiceImpl::Request(::google::protobuf::RpcController* controller,
+void RedisServiceImpl::ReqForOnline(::google::protobuf::RpcController* controller,
                        const ::DBProxyServer::RedisRequest* request,
                        ::DBProxyServer::RedisResponse* response,
                        ::google::protobuf::Closure* done) 
 {
-    //TODO
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
+
+    rapidjson::Document document;
+    document.Parse(request->message().c_str());
+    if(!document.HasMember(U_NAME)) {
+        response->set_status(REDIS_CLIENT_ERROR);
+        return;
+    }
+
+    std::string u_name = document[U_NAME].GetString();
+
+    std::unordered_map<std::string, RedisPool*>::iterator it = _redis_pool_map.find(ONLINE);
+    if(it == _redis_pool_map.end()) {
+        LOG(ERROR) << "Defect db: " << ONLINE;
+        response->set_status(REDIS_SERVER_ERROR);
+        return;
+    }
+
+    RedisPool *pool = it->second;
+    RedisConn *conn = pool->getRedisConn();
+    if(!conn) {
+        LOG(ERROR) << "RedisConn unuseful in:" << pool->getRedisDbNum();
+        response->set_status(REDIS_SERVER_ERROR);
+        return;
+    }
+
+    if(conn->isExits(u_name.c_str())) {
+        std::string res = conn->get(u_name.c_str());
+        if(res == "online") {
+            response->set_status(REDIS_IS_ONLINE);
+        }
+        else {
+            response->set_status(REDIS_SUCCESS);
+        }
+    }
+    else {
+        std::string res = conn->set(u_name.c_str(), "offline");
+        response->set_status(REDIS_SUCCESS);
+    }
+    
+    pool->retRedisConn(conn);
+}
+
+void RedisServiceImpl::ReqForToken(::google::protobuf::RpcController* controller,
+                       const ::DBProxyServer::RedisRequest* request,
+                       ::DBProxyServer::RedisResponse* response,
+                       ::google::protobuf::Closure* done) 
+{
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
+
+    rapidjson::Document document;
+    document.Parse(request->message().c_str());
+    if(!document.HasMember(U_NAME)) {
+        response->set_status(REDIS_CLIENT_ERROR);
+        return;
+    }
+
+    std::string u_name = document[U_NAME].GetString();
+
+    std::unordered_map<std::string, RedisPool*>::iterator it = _redis_pool_map.find(TOKEN);
+    if(it == _redis_pool_map.end()) {
+        LOG(ERROR) << "Defect db: " << TOKEN;
+        response->set_status(REDIS_SERVER_ERROR);
+        return;
+    }
+
+    RedisPool *pool = it->second;
+    RedisConn *conn = pool->getRedisConn();
+    if(!conn) {
+        LOG(ERROR) << "RedisConn unuseful in:" << pool->getRedisDbNum();
+        response->set_status(REDIS_SERVER_ERROR);
+        return;
+    }
+
+    if(conn->isExits(u_name.c_str())) {
+        std::string token = conn->get(u_name.c_str());
+        response->set_message(token);
+        response->set_status(REDIS_SUCCESS);
+    }
+    else {
+        response->set_status(REDIS_NO_TOKEN);
+    }
+
+    pool->retRedisConn(conn);
+}
+
+void RedisServiceImpl::SetToken(::google::protobuf::RpcController* controller,
+                       const ::DBProxyServer::RedisRequest* request,
+                       ::DBProxyServer::RedisResponse* response,
+                       ::google::protobuf::Closure* done) 
+{
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
+/*{
+    "u_name": ****,
+    "token": *****
+}*/
+    rapidjson::Document document;
+    document.Parse(request->message().c_str());
+    if(!document.HasMember(U_NAME) || !document.HasMember(U_TOKEN)) {
+        response->set_status(REDIS_CLIENT_ERROR);
+        return;
+    }
+
+    std::string u_name = document[U_NAME].GetString();
+    std::string token = document[U_TOKEN].GetString();
+
+    std::unordered_map<std::string, RedisPool*>::iterator it = _redis_pool_map.find(TOKEN);
+    if(it == _redis_pool_map.end()) {
+        LOG(ERROR) << "Defect db: " << TOKEN;
+        response->set_status(REDIS_SERVER_ERROR);
+        return;
+    }
+
+    RedisPool *pool = it->second;
+    RedisConn *conn = pool->getRedisConn();
+    if(!conn) {
+        LOG(ERROR) << "RedisConn unuseful in:" << pool->getRedisDbNum();
+        response->set_status(REDIS_SERVER_ERROR);
+        return;
+    }
+
+    //7天免登录
+    int timeout = 7 * 24 * 60 * 60;
+    std::string retValue = conn->setex(u_name.c_str(), token.c_str(), timeout);
+    response->set_status(REDIS_SUCCESS);
+
+    pool->retRedisConn(conn);
 }
 
 int RedisServiceImpl::init(const std::string &configFile) {
