@@ -5,6 +5,7 @@
 ================================================================================*/
 
 #include "AccessMySql.h"
+#include "Channel.h"
 #include "base/ConfigParse.h"
 #include "base/Logging.h"
 #include "base/structs.h"
@@ -13,12 +14,6 @@
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
 
-#define DB_PROXY_SERVER_IP "db_proxy_server_ip"
-#define DB_PROXY_SERVER_PORT "db_proxy_server_port"
-#define MAX_RETRY "max_retry"
-#define TIMEOUT_MS "timeout_ms"
-/// connection_type = [single, pooled, short]
-#define CONNECTION_TYPE ""
 
 namespace YTalk
 {
@@ -31,43 +26,11 @@ AccessMySql::~AccessMySql() {
     //TODO
 }
 
-int AccessMySql::init(ConfigParse *cParse) {
-    if(!cParse->status()) {
+int AccessMySql::init(Channel *channel) {
+    if(!channel || !channel->getStatus()) {
         return 1;
     }
-
-    cParse->getValue(DB_PROXY_SERVER_IP, _dbProxyServer_ip);
-    cParse->getValue(DB_PROXY_SERVER_PORT, _dbProxyServer_port_str);
-    if(_dbProxyServer_port_str.empty() || _dbProxyServer_ip.empty()) {
-        LOG(ERROR) << "Not configure ip or port of DB_Proxy_server";
-        return 2;
-    }
-    std::string server_ip_and_port = _dbProxyServer_ip + ":" + _dbProxyServer_port_str;
-
-    brpc::ChannelOptions options;
-
-    std::string max_retry_str;
-    cParse->getValue(MAX_RETRY, max_retry_str);
-    if(!max_retry_str.empty()) {
-        options.max_retry = std::stoi(max_retry_str);
-    } 
-
-    std::string timeout_ms_str;
-    cParse->getValue(TIMEOUT_MS, timeout_ms_str);
-    if(!timeout_ms_str.empty()) {
-        options.timeout_ms = std::stoi(timeout_ms_str);
-    }
-
-    std::string connection_type;
-    cParse->getValue(CONNECTION_TYPE, connection_type);
-    if(!connection_type.empty()) {
-        options.connection_type = connection_type;
-    }
-
-    if(_channel.Init(server_ip_and_port.c_str(), &options) != 0) {
-        LOG(ERROR) << "Fail to initalize";
-        return 3;
-    }
+    _channel = channel;
     return 0;
 }
 
@@ -90,7 +53,7 @@ int AccessMySql::queryForLogin(const std::string &username, const std::string &p
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
     document.Accept(writer);
 
-    ::DBProxyServer::MySqlService_Stub stub(&_channel);
+    ::DBProxyServer::MySqlService_Stub stub(_channel->getChannel());
     request.set_message(sb.GetString());
 
     stub.Login(&cntl, &request, &response, nullptr);
@@ -157,7 +120,7 @@ NewUserInfo* AccessMySql::updateForRegister(const UserRegisterInfo &userRegister
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
     document.Accept(writer);
 
-    DBProxyServer::MySqlService_Stub stub(&_channel);
+    DBProxyServer::MySqlService_Stub stub(_channel->getChannel());
     request.set_message(sb.GetString());
 
     stub.Register(&cntl, &request, &response, nullptr);
@@ -183,7 +146,7 @@ int AccessMySql::getMaxUserId() {
     DBProxyServer::MySqlResponse response;
     brpc::Controller cntl;
 
-    DBProxyServer::MySqlService_Stub stub(&_channel);
+    DBProxyServer::MySqlService_Stub stub(_channel->getChannel());
 
     request.set_message("1");
     stub.GetMaxUserId(&cntl, &request, &response, nullptr);

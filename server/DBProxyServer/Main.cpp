@@ -40,12 +40,12 @@ int main(int argc, char *argv[])
         LOG(ERROR) << "MySqlServiceImpl init failed";
         return 2;
     }
-    /*
+    
     ::YTalk::RedisServiceImpl redisService;
     if(redisService.init(&confParse)) {
         LOG(ERROR) << "RedisServiceImpl init failed";
         return 3;
-    }*/
+    }
 
     brpc::Server server;
 
@@ -53,11 +53,11 @@ int main(int argc, char *argv[])
         LOG(ERROR) << "Fail to add service: MySqlServiceImpl";
         return 4;
     }
-    /*
+    
     if(server.AddService(&redisService, brpc::SERVER_DOESNT_OWN_SERVICE) != 0) {
         LOG(ERROR) << "Fail to add service: RedisServiceImpl";
         return 5;
-    }*/
+    }
 
     brpc::ServerOptions options;
 

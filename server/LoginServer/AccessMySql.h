@@ -17,6 +17,7 @@ namespace YTalk
 {
 
 class ConfigParse;
+class Channel;
 
 class AccessMySql
 {
@@ -24,7 +25,7 @@ public:
     AccessMySql();
     virtual ~AccessMySql();
 
-    int init(ConfigParse *cParse);
+    int init(Channel *channel);
 
     int queryForLogin(const std::string &username, const std::string &password);
 
@@ -35,10 +36,7 @@ public:
     int getMaxUserId();
 
 private:
-    std::string _dbProxyServer_ip;
-    std::string _dbProxyServer_port_str;
-
-    brpc::Channel _channel;
+    Channel *_channel;
 };    // class AccessMySql
 
 }    // namesapce YTalk

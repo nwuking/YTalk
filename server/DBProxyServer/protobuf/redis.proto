@@ -4,13 +4,15 @@ package DBProxyServer;
 option cc_generic_services = true;
 
 message RedisRequest {
-    //TODO
+    optional string message = 1;
 };
 
 message RedisResponse {
-    //TODO
+    required int32 status = 1;
+    optional string message = 2;
 };
 
 service RedisService {
-    rpc Request(RedisRequest) returns (RedisResponse);
+    rpc ReqForOnline(RedisRequest) returns (RedisResponse);
+    rpc ReqForToken(RedisRequest) returns (RedisResponse);
 };

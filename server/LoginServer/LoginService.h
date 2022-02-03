@@ -17,8 +17,10 @@ namespace YTalk
 {
 
 class AccessMySql;
+class AccessRedis;
 class ConfigParse;
 class Session;
+class Channel;
 
 class LoginServiceImpl : public ::LoginServer::HttpService
 {
@@ -36,10 +38,11 @@ public:
                        ::LoginServer::HttpResponse* response,
                        ::google::protobuf::Closure* done);
 
-    int init(ConfigParse *cParse, Session *session);
+    int init(ConfigParse *cParse, Session *session, Channel *channel);
 
 private:
     AccessMySql *_accessMySql;
+    AccessRedis *_accessRedis;
     Session *_session;
 
     std::atomic_int _baseUserId{0};

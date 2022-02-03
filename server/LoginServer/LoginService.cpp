@@ -7,16 +7,19 @@
 #include "LoginService.h"
 #include "base/ConfigParse.h"
 #include "AccessMySql.h"
+#include "AccessRedis.h"
 #include "Session.h"
+#include "Channel.h"
 #include "base/Logging.h"
 #include "base/structs.h"
+#include "base/Token.h"
 
 //#include <rapidjson/document.h>
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 
-#define USERNAME "username"
-#define PASSWORD "password"
+//#define USERNAME "username"
+//#define PASSWORD "password"
 
 namespace YTalk
 {
@@ -38,8 +41,8 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
                        ::google::protobuf::Closure* done)
 {
     // called by client
-    ::brpc::ClosureGuard done_guard(done);
-    ::brpc::Controller *cntl = static_cast<::brpc::Controller*>(controller);
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<::brpc::Controller*>(controller);
 
     std::string reqMsg = cntl->request_attachment().to_string();
     if(reqMsg.empty()) {
@@ -53,19 +56,19 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
         return;
     }
 
-    std::string username, password;
-    rapidjson::Value::MemberIterator u = document.FindMember(USERNAME);
-    rapidjson::Value::MemberIterator p = document.FindMember(PASSWORD);
+    std::string u_name, u_password;
+    rapidjson::Value::MemberIterator u = document.FindMember(U_NAME);
+    rapidjson::Value::MemberIterator p = document.FindMember(U_PASSWORD);
     if(u == document.MemberEnd() || p == document.MemberEnd()) {
         cntl->http_response().set_status_code(brpc::HTTP_STATUS_BAD_REQUEST);
         return;
     } 
-    username = u->value.GetString();
-    password = p->value.GetString();
+    u_name = u->value.GetString();
+    u_password = p->value.GetString();
 
-    int status = _accessMySql->queryForLogin(username, password);
+    int status = _accessMySql->queryForLogin(u_name, u_password);
 
-    if(status == LOGIN_SUCCESS) {
+    if(status == DBPROXY_SUCCESS) {
         struct GateServerMsg *gate = _session->getGateServerMsg();
         if(!gate) {
             LOG(ERROR) << "There is not GateServer Msg";
@@ -73,20 +76,38 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
             return;
         }
 
-        std::string rspMsg = "{\"server_ip\" : \"" + gate->_ip + "\", \"server_port\" : " + std::to_string(gate->_port) + "}";
+        //访问redis，查询该账号是否在线
+        int redis_status = _accessRedis->queryForOnline(u_name);
+        if(redis_status == REDIS_IS_ONLINE) {
+            //TODO:踢人
+        }
+        else if(redis_status != REDIS_SUCCESS) {
+            cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            return;
+        }
 
-        //rapidjson::Document document;
-        document.Parse(rspMsg.c_str());
-        rapidjson::StringBuffer sb;
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-        document.Accept(writer);
+        //查询redis是否有token
+        std::string token;
+        redis_status = _accessRedis->queryForToken(u_name, token);
+        if(redis_status == REDIS_NO_TOKEN) {
+            token = TokenGenerator::generateToken(u_name);
+        }
+        else if(redis_status != REDIS_SUCCESS) {
+            cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        
+        std::string rspMsg = "{"
+                                    "\"server_ip\": \"" + gate->_ip + "\", "
+                                    "\"server_port\": \"" + std::to_string(gate->_port) + "\", "
+                                    "\"token\": \"" + token + "\""
+                             "}"; 
 
-        rspMsg = sb.GetString();
         cntl->response_attachment().append(rspMsg.c_str());
         cntl->http_response().set_status_code(brpc::HTTP_STATUS_OK);
     }
     else {
-        if(status == LOGIN_FAIL) {
+        if(status == DBPROXY_FAIL) {
             cntl->http_response().set_status_code(brpc::HTTP_STATUS_NOT_FOUND);
         }
         else {
@@ -181,23 +202,28 @@ LOG(INFO) << "KAKAKA2";
     delete newUser;
 }
 
-int LoginServiceImpl::init(ConfigParse *cParse, Session *session) {
+int LoginServiceImpl::init(ConfigParse *cParse, Session *session, Channel *channel) {
     _session = session;
     _accessMySql = new AccessMySql();
-    if(!_accessMySql) {
-        LOG(ERROR) << "Fail to new AccessMySql";
+    _accessRedis = new AccessRedis();
+    if(!_accessMySql || !_accessRedis) {
+        LOG(ERROR) << "Fail to new AccessMySql or AccessRedis";
         return 1;
     }
-    if(_accessMySql->init(cParse)) {
+    if(_accessMySql->init(channel)) {
         LOG(ERROR) << "Fail to initializate AccessMySql";
         return 2;
+    }
+    if(_accessRedis->init(channel)) {
+        LOG(ERROR) << "Fail to init AccessRedis";
+        return 3;
     }
 
     //从user中获取u_id最大值
     _baseUserId = _accessMySql->getMaxUserId();
     if(_baseUserId == -1) {
         LOG(ERROR) << "Fail to init, _baseUserId = -1";
-        return 3;
+        return 4;
     }
     return 0;
 }

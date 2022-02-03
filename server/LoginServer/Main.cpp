@@ -12,6 +12,7 @@
 #include "Session.h"
 #include "LoginService.h"
 #include "AuthService.h"
+#include "Channel.h"
 
 DEFINE_string(ip, "login_server_listen_ip", "login server ip key");
 DEFINE_string(client_port, "client_listen_port", "for listen client");
@@ -38,9 +39,14 @@ int main(int argc, char *argv[])
     }
 
     ::YTalk::Session *session = YTalk::Session::getInstance();
+    YTalk::Channel channel;
+    if(channel.init(&confParse)) {
+        LOG(ERROR) << "Fail to init Channel";
+        return 1;
+    }
     
     ::YTalk::LoginServiceImpl loginService;
-    if(loginService.init(&confParse, session)) {
+    if(loginService.init(&confParse, session, &channel)) {
         LOG(ERROR) << "Fail to init LoginServiceImpl";
         return 2;
     }

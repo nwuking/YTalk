@@ -15,7 +15,8 @@ set(SOURCES
     AccessMySql.cpp 
     LoginService.cpp  
     AuthService.cpp 
-    Session.cpp   
+    Session.cpp 
+    Channel.cpp 
     protobuf/login.pb.cc  
     protobuf/auth.pb.cc  
     ${DBPROXY_INCLUDE}/DBProxyServer/protobuf/mysql.pb.cc 

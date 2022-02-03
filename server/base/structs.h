@@ -25,6 +25,11 @@ enum MySqlStatus {
     MYSQL_UPDATE_FAIL,
     MYSQL_OPTION_NOT_USE,
 };
+enum RedisStatus {
+    REDIS_SUCCESS = 0,
+    REDIS_IS_ONLINE,
+    REDIS_NO_TOKEN
+};
 enum DBProxyStatus {
     DBPROXY_SUCCESS = 0,
     DBPROXY_SERVER_ERROR,
@@ -94,6 +99,14 @@ struct NewUserInfo {
 #define U_GENDER "u_gender"
 #define U_BIRTHDAY "u_birthday"
 #define U_SIGNATURE "u_signature"
+
+
+#define DB_PROXY_SERVER_IP "db_proxy_server_ip"
+#define DB_PROXY_SERVER_PORT "db_proxy_server_port"
+#define MAX_RETRY "max_retry"
+#define TIMEOUT_MS "timeout_ms"
+/// connection_type = [single, pooled, short]
+#define CONNECTION_TYPE ""
 
 }     /// namespace YTalk
 
