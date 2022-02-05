@@ -6,6 +6,7 @@ set(BASE_INCLUDE ${PROJECT_SOURCE_DIR}/../)
 set(DBPROXY_INCLUDE ${PROJECT_SOURCE_DIR}/../)
 set(PROTO_INCLUDE ${PROJECT_SOURCE_DIR}/)
 set(BRPC_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/brpc/include/)
+set(OPENSSL_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/openssl/include/)
 ##set(MYSQL_INCLUDE /usr/include/)
 ###set(REDIS_INCLUDE /usr/local/include/)
 set(RAPIDJSON_INCLUDE ${PROJECT_SOURCE_DIR}/../../thirdparty/)
@@ -13,6 +14,7 @@ set(LOGINSERVER_INCLUDE ${PROJECT_SOURCE_DIR}/)
 
 set(SOURCES 
     AccessMySql.cpp 
+    AccessRedis.cpp 
     LoginService.cpp  
     AuthService.cpp 
     Session.cpp 
@@ -32,6 +34,7 @@ target_include_directories(LoginServer-static
                     PUBLIC ${BASE_INCLUDE} 
                            ${DBPROXY_INCLUDE} 
                            ${BRPC_INCLUDE} 
+                           ${OPENSSL_INCLUDE} 
                            ${PROTO_INCLUDE} 
                            ${RAPIDJSON_INCLUDE}
                            ${LOGINSERVER_INCLUDE}

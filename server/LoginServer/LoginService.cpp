@@ -102,6 +102,8 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
             cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
             return;
         }
+
+        redis_status = _accessRedis->setOnlineStatus(u_name, true);
         
         std::string rspMsg = "{"
                                     "\"server_ip\": \"" + gate->_ip + "\", "

@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     gflags::ParseCommandLineFlags(&argc, &argv, true);
     signal(SIGPIPE, SIG_IGN);
 
-    ::logging::LogSink *newSink = YTalk::Logger::getInstance(FLAGS_log_conf.c_str());
+    ::logging::LogSink *newSink = YTalk::Logger::getInstance(/*FLAGS_log_conf.c_str()*/);
     ::logging::LogSink *oldSink = ::logging::SetLogSink(newSink);
 
     YTalk::ConfigParse confParse;

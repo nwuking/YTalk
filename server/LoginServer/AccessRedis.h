@@ -31,6 +31,8 @@ public:
 
     int setToken(const std::string &u_name, const std::string &token);
 
+    int setOnlineStatus(const std::string &u_name, bool flag = true);
+
 private:
     Channel *_channel;
 

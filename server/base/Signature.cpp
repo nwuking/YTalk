@@ -11,7 +11,7 @@
 
 namespace YTalk
 {
-
+/*
 void Signature::sign(const std::string &digest, std::string &signature) {
     OSSL_LIB_CTX *libctx = nullptr;
     const char *propq = nullptr;
@@ -74,8 +74,8 @@ cleanup:
     OPENSSL_free(sig_value);
     EVP_PKEY_free(pri_key);
     EVP_MD_CTX_free(sig_context);
-}
-
+}*/
+/*
 bool Signature::verify(const std::string &digest, const std::string &signature) {
     OSSL_LIB_CTX *libctx = nullptr;
     const char *propq = nullptr;
@@ -84,37 +84,37 @@ bool Signature::verify(const std::string &digest, const std::string &signature) 
 
     const char *sig_name = "SHA3-512";
     bool result = true;
-
+*/
     /*
     * Make a verify signature context to hold temporary state
     * during signature verification
     */
-    verify_context = EVP_MD_CTX_new();
+  /*  verify_context = EVP_MD_CTX_new();
     if (verify_context == NULL) {
         LOG(ERROR) << "EVP_MD_CTX_new failed.";
         result = false;
         goto cleanup;
-    }
+    }*/
     /* Get public key */
-    pub_key = getKey(libctx, propq, PUBLIC_KEY);
+    /*pub_key = getKey(libctx, propq, PUBLIC_KEY);
     if (pub_key == NULL) {
         LOG(ERROR) << "Get public key failed.";
         result = false;
         goto cleanup;
-    }
+    }*/
 
     /* Verify */
-    if (!EVP_DigestVerifyInit_ex(verify_context, NULL, sig_name,
+   /* if (!EVP_DigestVerifyInit_ex(verify_context, NULL, sig_name,
                                 libctx, NULL, pub_key, NULL)) {
         LOG(ERROR) << "EVP_DigestVerifyInit failed.";
         result = false;
         goto cleanup;
-    }
+    }*/
     /*
     * EVP_DigestVerifyUpdate() can be called several times on the same context
     * to include additional data.
     */
-    if (!EVP_DigestVerifyUpdate(verify_context, digest.c_str(), digest.size())) {
+    /*if (!EVP_DigestVerifyUpdate(verify_context, digest.c_str(), digest.size())) {
         LOG(ERROR) << "EVP_DigestVerifyUpdate(hamlet_1) failed.";
         result = false;
         goto cleanup;
@@ -156,6 +156,6 @@ EVP_PKEY* Signature::getKey(OSSL_LIB_CTX *libctx, const char *propq, int flag) {
     OSSL_DECODER_CTX_free(dctx);
 
     return pkey;
-}
+}*/
 
 }

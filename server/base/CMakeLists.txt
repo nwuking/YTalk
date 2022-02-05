@@ -10,7 +10,7 @@ set(BASE_SOURCES
     Logging.cpp 
     Time.cpp 
     ConfigParse.cpp 
-    Signature.cpp )
+    )
 
 ## for include
 set(BASE_INCLUDE ${PROJECT_SOURCE_DIR}/)

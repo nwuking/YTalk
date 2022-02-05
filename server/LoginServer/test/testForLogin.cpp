@@ -1,41 +1,54 @@
-#include "LoginService.h"
 #include "base/Logging.h"
 #include "base/ConfigParse.h"
-#include "Session.h"
-
 #include "brpc/channel.h"
 #include "brpc/server.h"
+
 #include "gflags/gflags.h"
 
-DEFINE_string(test_conf, "./test.conf", "");
-
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    ::logging::LogSink *newSink = ::YTalk::Logger::getInstance();
-    ::logging::LogSink *oldSink = ::logging::SetLogSink(oldSink);
+    logging::LogSink *newSink = YTalk::Logger::getInstance();
+    logging::LogSink *oldSink = logging::SetLogSink(newSink);
 
-    ::YTalk::ConfigParse cParse;
-    cParse.parse(FLAGS_test_conf);
+    std::string url = "http://127.0.0.1:10400/HttpService/Login";
 
-    ::YTalk::Session *session = ::YTalk::Session::getInstance();
-    struct in_addr ip = {};
-    session->record("nwu", 5200, ip);
+    brpc::Channel channel;
+    brpc::ChannelOptions options;
+    options.protocol = "http";
+    options.timeout_ms = 2000;
+    options.max_retry = 3;
 
-    YTalk::LoginServiceImpl pp;
-    pp.init(&cParse, session);
+    if(channel.Init(url.c_str(), nullptr, &options) != 0) {
+        LOG(ERROR) << "Fail to init channel";
+        return 2;
+    }
 
-    ::brpc::Controller cntl;
-    std::string msg = "{\"username\" :\"nwuking\", \"password\" : \"123456789\"}";
+    brpc::Controller cntl;
+    cntl.http_request().set_method(brpc::HTTP_METHOD_POST);
+
+    cntl.http_request().uri() = url.c_str();
+    //std::string msg = "{\"username\" : \"nwuking\", \"password\" : \"123456789\"}";
+    std::string msg = "{"
+                            "\"u_name\": \"18176447770\", "
+                            "\"u_password\": \"zym520\""
+                      "}";
     cntl.request_attachment().append(msg);
+    channel.CallMethod(nullptr, &cntl, nullptr, nullptr, nullptr);
+    if(cntl.Failed()) {
+        LOG(ERROR) << cntl.ErrorText();
+        return 3;
+    }
 
-    pp.Login(&cntl, nullptr, nullptr, nullptr);
-
-    LOG(INFO) << "STATUS: " << cntl.http_response().status_code();
-    LOG(INFO) << "MSG   : " << cntl.response_attachment();
-
-    delete newSink;
-    ::YTalk::Session::freeSession();
+   if(cntl.http_response().status_code() == brpc::HTTP_STATUS_OK) {
+       LOG(INFO) << "login successful:\n" << cntl.response_attachment().to_string();
+   }
+   else {
+       LOG(ERROR) << "fail to login";
+   }
+    if(newSink) {
+        delete newSink;
+    }
     return 0;
 }

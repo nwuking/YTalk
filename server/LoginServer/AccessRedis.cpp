@@ -118,4 +118,35 @@ int AccessRedis::setToken(const std::string &u_name, const std::string &token) {
     return -1;
 }
 
+int AccessRedis::setOnlineStatus(const std::string &u_name, bool flag) {
+    DBProxyServer::RedisRequest request;
+    DBProxyServer::RedisResponse response;
+    brpc::Controller cntl;
+
+    rapidjson::Document document;
+    document.SetObject();
+    rapidjson::Value value;
+    value.SetString(u_name.c_str(), u_name.size(), document.GetAllocator());
+    document.AddMember(U_NAME, value, document.GetAllocator());
+
+    rapidjson::Value value2;
+    value2.SetBool(flag);
+    document.AddMember(U_ONLINE_STATUS, value2, document.GetAllocator());
+
+    rapidjson::StringBuffer sb;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
+    document.Accept(writer);
+
+    DBProxyServer::RedisService_Stub stub(_channel->getChannel());
+    request.set_message(sb.GetString());
+
+    stub.SetOnlineStatus(&cntl, &request, &response, nullptr);
+    if(!cntl.Failed()) {
+        return response.status();
+    }
+
+    LOG(ERROR) << "Fail to call RedisService:queryForToken";
+    return -1;
+}
+
 }   /// namespace YTalk

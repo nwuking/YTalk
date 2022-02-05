@@ -8,8 +8,8 @@
 #define YTALK_SIGNATURE_H
 
 #include "openssl/evp.h"
-#include "openssl/core_names.h"
-#include "openssl/decoder.h"
+//#include "openssl/core_names.h"
+//#include "openssl/decoder.h"
 
 #include <string>
 
@@ -24,16 +24,20 @@ enum KEY_FLAG {
 class Signature
 {
 public:
-    static void sign(const std::string &plaintext, std::string &signature);
+    static void sign(const std::string &plaintext, std::string &signature) {
+        signature = "todo";
+    }
 
-    static bool verify(const std::string &digest, const std::string &signature);
+    static bool verify(const std::string &digest, const std::string &signature) {
+        //TODO
+    }
 
 
     /*
     For sign, load private key from priv_key_der[]
     For cerify, load public key from pub_key_der[]
     */
-    static EVP_PKEY* getKey(OSSL_LIB_CTX *libctx, const char *propq, int flag);
+    //static EVP_PKEY* getKey(OSSL_LIB_CTX *libctx, const char *propq, int flag);
 
 }; // class Signature
 

@@ -44,6 +44,11 @@ public:
                        const ::DBProxyServer::RedisRequest* request,
                        ::DBProxyServer::RedisResponse* response,
                        ::google::protobuf::Closure* done);
+
+    virtual void SetOnlineStatus(::google::protobuf::RpcController* controller,
+                       const ::DBProxyServer::RedisRequest* request,
+                       ::DBProxyServer::RedisResponse* response,
+                       ::google::protobuf::Closure* done);
     
     int init(const std::string &configFile);
     int init(ConfigParse *cParse);

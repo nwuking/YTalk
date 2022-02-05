@@ -8,11 +8,11 @@
 #include "RedisPool.h"
 #include "base/ConfigParse.h"
 #include "base/Logging.h"
-#include "brpc/server.h"
 #include "base/structs.h"
 #include "rapidjson/document.h"
 
 #include <vector>
+#include <brpc/channel.h>
 
 #define CACHEINSTANCES_KEY "RedisInstances"
 #define ONLINE "online"
@@ -166,6 +166,48 @@ void RedisServiceImpl::SetToken(::google::protobuf::RpcController* controller,
     //7天免登录
     int timeout = 7 * 24 * 60 * 60;
     std::string retValue = conn->setex(u_name.c_str(), token.c_str(), timeout);
+    response->set_status(REDIS_SUCCESS);
+
+    pool->retRedisConn(conn);
+}
+
+void RedisServiceImpl::SetOnlineStatus(::google::protobuf::RpcController* controller,
+                       const ::DBProxyServer::RedisRequest* request,
+                       ::DBProxyServer::RedisResponse* response,
+                       ::google::protobuf::Closure* done) 
+{
+    brpc::ClosureGuard done_guard(done);
+    brpc::Controller *cntl = static_cast<brpc::Controller*>(controller);
+/*{
+    "u_name": ****,
+    "online_status": *****
+}*/
+    rapidjson::Document document;
+    document.Parse(request->message().c_str());
+    if(!document.HasMember(U_NAME) || !document.HasMember(U_ONLINE_STATUS)) {
+        response->set_status(REDIS_CLIENT_ERROR);
+        return;
+    }
+
+    std::string u_name = document[U_NAME].GetString();
+    bool u_online_status = document[U_ONLINE_STATUS].GetBool();
+
+    std::unordered_map<std::string, RedisPool*>::iterator it = _redis_pool_map.find(ONLINE);
+    if(it == _redis_pool_map.end()) {
+        LOG(ERROR) << "Defect db: " << ONLINE;
+        response->set_status(REDIS_SERVER_ERROR);
+        return;
+    }
+
+    RedisPool *pool = it->second;
+    RedisConn *conn = pool->getRedisConn();
+    if(!conn) {
+        LOG(ERROR) << "RedisConn unuseful in:" << pool->getRedisDbNum();
+        response->set_status(REDIS_SERVER_ERROR);
+        return;
+    }
+
+    std::string redis_status = conn->set(u_name.c_str(), (u_online_status ? "online" : "offline"));
     response->set_status(REDIS_SUCCESS);
 
     pool->retRedisConn(conn);

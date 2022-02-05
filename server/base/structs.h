@@ -103,6 +103,7 @@ struct NewUserInfo {
 #define U_SIGNATURE "u_signature"
 
 #define U_TOKEN "token"
+#define U_ONLINE_STATUS "online_status"
 
 
 #define DB_PROXY_SERVER_IP "db_proxy_server_ip"
