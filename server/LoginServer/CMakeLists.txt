@@ -19,9 +19,11 @@ set(SOURCES
     AuthService.cpp 
     Session.cpp 
     Channel.cpp 
+    Token.cpp 
     protobuf/login.pb.cc  
     protobuf/auth.pb.cc  
     ${DBPROXY_INCLUDE}/DBProxyServer/protobuf/mysql.pb.cc 
+    ${DBPROXY_INCLUDE}/DBProxyServer/protobuf/redis.pb.cc 
     )
 
 

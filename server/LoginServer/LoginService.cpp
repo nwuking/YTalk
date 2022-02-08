@@ -10,9 +10,10 @@
 #include "AccessRedis.h"
 #include "Session.h"
 #include "Channel.h"
+#include "Token.h"
 #include "base/Logging.h"
 #include "base/structs.h"
-#include "base/Token.h"
+#include "base/Digest.h"
 
 //#include <rapidjson/document.h>
 #include "rapidjson/document.h"
@@ -56,16 +57,19 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
         return;
     }
 
-    std::string u_name, u_password;
+    std::string u_name, u_password, u_token;
     rapidjson::Value::MemberIterator u = document.FindMember(U_NAME);
     rapidjson::Value::MemberIterator p = document.FindMember(U_PASSWORD);
+    //rapidjson::Value::MemberIterator t = document.FindMember(U_TOKEN);
     if(u == document.MemberEnd() || p == document.MemberEnd()) {
         cntl->http_response().set_status_code(brpc::HTTP_STATUS_BAD_REQUEST);
         return;
     } 
     u_name = u->value.GetString();
     u_password = p->value.GetString();
+    //u_token = t->value.GetString();
 
+    //if(u_token.empty())
     int status = _accessMySql->queryForLogin(u_name, u_password);
 
     if(status == DBPROXY_SUCCESS) {
@@ -90,7 +94,14 @@ void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,
         std::string token;
         redis_status = _accessRedis->queryForToken(u_name, token);
         if(redis_status == REDIS_NO_TOKEN) {
-            token = TokenGenerator::generateToken(u_name);
+            std::string digest = Digest::generateDigest(u_name);
+            std::string signature;
+            if(!_token->sign(digest, signature)) {
+                LOG(ERROR) << "Fail to sign";
+                cntl->http_response().set_status_code(brpc::HTTP_STATUS_INTERNAL_SERVER_ERROR);
+                return;
+            }
+            token = digest + "." + signature;
             //TODO:将token写到redis，有时间限制
             redis_status = _accessRedis->setToken(u_name, token);
             if(redis_status != REDIS_SUCCESS) {
@@ -158,7 +169,7 @@ void LoginServiceImpl::Register(::google::protobuf::RpcController* controller,
     userRegisterInfo.u_name = it1->value.GetString();
     userRegisterInfo.u_nickname = it2->value.GetString();
     userRegisterInfo.u_password = it3->value.GetString();
-LOG(INFO) << "KAKAK1";
+
     //int u_id;
     {
         MutexLock lock(_mutex);
@@ -188,7 +199,7 @@ LOG(INFO) << "KAKAK1";
     if(it1 != document.MemberEnd()) {
         userRegisterInfo.u_signature = it1->value.GetString();
     }*/
-LOG(INFO) << "KAKAKA2";
+
     NewUserInfo *newUser = _accessMySql->updateForRegister(userRegisterInfo);
     if(!newUser) {
         LOG(ERROR) << "NewUserInfo is nullptr";
@@ -210,8 +221,9 @@ LOG(INFO) << "KAKAKA2";
     delete newUser;
 }
 
-int LoginServiceImpl::init(ConfigParse *cParse, Session *session, Channel *channel) {
+int LoginServiceImpl::init(ConfigParse *cParse, Session *session, Channel *channel, Token *token) {
     _session = session;
+    _token = token;
     _accessMySql = new AccessMySql();
     _accessRedis = new AccessRedis();
     if(!_accessMySql || !_accessRedis) {

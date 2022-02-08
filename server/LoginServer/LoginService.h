@@ -21,6 +21,7 @@ class AccessRedis;
 class ConfigParse;
 class Session;
 class Channel;
+class Token;
 
 class LoginServiceImpl : public ::LoginServer::HttpService
 {
@@ -38,12 +39,13 @@ public:
                        ::LoginServer::HttpResponse* response,
                        ::google::protobuf::Closure* done);
 
-    int init(ConfigParse *cParse, Session *session, Channel *channel);
+    int init(ConfigParse *cParse, Session *session, Channel *channel, Token *token);
 
 private:
     AccessMySql *_accessMySql;
     AccessRedis *_accessRedis;
     Session *_session;
+    Token *_token;
 
     std::atomic_int _baseUserId{0};
 

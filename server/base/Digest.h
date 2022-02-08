@@ -4,23 +4,21 @@
  *    Email: nwuking@qq.com  
 ================================================================================*/
 
-#ifndef YTALK_TOKEN_H
-#define YTALK_TOKEN_H
+#ifndef YTALK_DIGEST_H
+#define YTALK_DIGEST_H
 
 #include <string>
 
 #include "Base64.h"
 #include "Time.h"
-#include "Key.h"
-#include "Signature.h"
 
 namespace YTalk
 {
 
-class TokenGenerator
+class Digest
 {
 public:
-    static std::string generateToken(const std::string &username) {
+    static std::string generateDigest(const std::string &username) {
         std::string header_cip;
         Base64::encode(header, header_cip);
 
@@ -37,28 +35,16 @@ public:
 
         std::string digest = header_cip + "." + payload_cip;
 
-        std::string signature;
-        Signature::sign(digest, signature);
-    
-        return (digest + "." + signature);
+        return digest;
     }
 
     static const std::string header;
 };
 
-class TokenVerify
-{
-public:
-    static bool verifyToken() {
-        //TODO
-    }
-};
-
-const std::string TokenGenerator::header = "{"
+const std::string Digest::header = "{"
                                                 "\"alg\": \"SHA3-512\","
                                                 "\"typ\": \"JWT\""
                                            "}";
-
 
 }
 
