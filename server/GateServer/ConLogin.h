@@ -22,7 +22,7 @@ public:
 
     int init(ConfigParse *cParse);
 
-    int auth(const std::string &username, const std::string &token);
+    bool auth(const std::string &u_name, const std::string &token);
 
     void firstSend();
 

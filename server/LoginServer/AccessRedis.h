@@ -33,6 +33,7 @@ public:
 
     int setOnlineStatus(const std::string &u_name, bool flag = true);
 
+
 private:
     Channel *_channel;
 

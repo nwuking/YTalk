@@ -8,7 +8,7 @@ message AuthRequest {
 };
 
 message AuthResponse {
-    optional int32 status = 1;
+    required int32 status = 1;
 };
 
 service AuthService {

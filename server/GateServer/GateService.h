@@ -28,7 +28,7 @@ public:
                        ::GateServer::Response* response,
                        ::google::protobuf::Closure* done);
 
-    virtual void FirstSend(::google::protobuf::RpcController* controller,
+    virtual void Login2Gate(::google::protobuf::RpcController* controller,
                        const ::GateServer::Request* request,
                        ::GateServer::Response* response,
                        ::google::protobuf::Closure* done);

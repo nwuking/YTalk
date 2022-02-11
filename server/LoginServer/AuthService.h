@@ -14,6 +14,8 @@ namespace YTalk
 
 class ConfigParse;
 class Session;
+class Channel;
+class AccessRedis;
 
 class AuthServiceImpl : public ::LoginServer::AuthService
 {
@@ -41,10 +43,11 @@ public:
                        ::LoginServer::AuthResponse* response,
                        ::google::protobuf::Closure* done);
 
-    int init(ConfigParse *cParse, Session *session);
+    int init(ConfigParse *cParse, Session *session, Channel *channel);
 
 private:
     Session *_session;
+    AccessRedis *_accessRedis;
 
 };     ///  class AuthServiceImpl
 

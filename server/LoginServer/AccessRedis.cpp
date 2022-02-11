@@ -84,7 +84,7 @@ int AccessRedis::queryForToken(const std::string &u_name, std::string &token) {
     }
 
     LOG(ERROR) << "Fail to call RedisService:queryForToken";
-    return -1;
+    return REDIS_SERVER_ERROR;
 }
 
 int AccessRedis::setToken(const std::string &u_name, const std::string &token) {
@@ -115,7 +115,7 @@ int AccessRedis::setToken(const std::string &u_name, const std::string &token) {
     }
 
     LOG(ERROR) << "Fail to call RedisService:queryForToken";
-    return -1;
+    return REDIS_SERVER_ERROR;
 }
 
 int AccessRedis::setOnlineStatus(const std::string &u_name, bool flag) {
@@ -148,5 +148,6 @@ int AccessRedis::setOnlineStatus(const std::string &u_name, bool flag) {
     LOG(ERROR) << "Fail to call RedisService:queryForToken";
     return -1;
 }
+
 
 }   /// namespace YTalk

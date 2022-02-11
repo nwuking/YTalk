@@ -1,0 +1,76 @@
+/**
+ * @file EventLoop.h
+ * @author nwuking@qq.com
+ * @brief ractor模式，one loop per thread
+ * @version 0.1
+ * @date 2022-02-11
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
+#ifndef YTALK_EVENT_LOOP_H
+#define YTALK_EVENT_LOOP_H
+
+#include "../base/TimeStamp.h"
+#include "Types.h"
+
+#include <thread>
+#include <memory>
+#include <vector>
+#include <mutex>
+
+namespace YTalk
+{
+
+namespace netlib
+{
+
+class Channel;
+class Poller;
+class TimerQueue;
+
+class EventLoop 
+{
+public:
+    /**
+     * @brief one loop per thread，在每一个线程里创建一个EventLoop对象
+     * 
+     */
+    EventLoop();
+    ~EventLoop();
+    /**
+     * @brief 开始循环监听事件的发生，
+     *        必须在同一线程里被调用
+     */
+    void loop();
+    /**
+     * @brief 停止循环监听事件
+     * 
+     */
+    void quit();
+
+private:
+    typedef std::vector<Channel*> CHANNEL_LIST;
+
+private:
+    bool                        m_isLooping;
+    bool                        m_isQuited;
+    bool                        m_eventHanding;
+    const std::thread::id       m_threadId;
+    base::TimeStamp             m_pollReturnTime;
+    std::unique_ptr<Poller>     m_pollerPtr;
+    std::unique_ptr<TimerQueue> m_timerQueuePtr;
+    SOCKET                      m_wakeupFd;
+    std::unique_ptr<Channel>    m_wakeupChannelPtr;
+    CHANNEL_LIST                m_activeChannels;
+    Channel*                    m_curActiveChannelPtr;
+    std::mutex                  m_mutex;
+
+};   // class EventLoop
+
+}   // namespace netlib
+
+}   // namespce YTalk
+
+#endif  // YTALK_EVENT_LOOP_H

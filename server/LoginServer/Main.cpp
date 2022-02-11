@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     LOG(INFO) << "Initializate LoginServiceImpl";
 
     ::YTalk::AuthServiceImpl authService;
-    if(authService.init(&confParse, session)) {
+    if(authService.init(&confParse, session, &channel)) {
         LOG(ERROR) << "Fail to init AuthServiceImpl";
         return 3;
     }

@@ -34,6 +34,9 @@ LoginServiceImpl::~LoginServiceImpl() {
     if(_accessMySql) {
         delete _accessMySql;
     }
+    if(_accessRedis) {
+        delete _accessRedis;
+    }
 }
 
 void LoginServiceImpl::Login(::google::protobuf::RpcController* controller,

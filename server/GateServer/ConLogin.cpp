@@ -7,13 +7,14 @@
 #include "ConLogin.h"
 #include "base/Logging.h"
 #include "base/ConfigParse.h"
+#include "base/structs.h"
 #include "LoginServer/protobuf/auth.pb.h"
 
 #define LOGIN_SERVER_IP "login_server_ip"
 #define LOGIN_SERVER_PORT "login_server_port"
-#define CONNECTION_TYPE "connection_type"
-#define TIME_OUT "time_out"
-#define MAX_RETRY "max_retry"
+#define CONNECTION_TYPE_ "connection_type"
+#define TIME_OUT_ "time_out"
+#define MAX_RETRY_ "max_retry"
 #define GATE_SERVER_NAME "gate_server_name"
 #define GATE_SERVER_PORT "gate_server_listen_port"
 
@@ -60,9 +61,9 @@ int ConLogin::init(ConfigParse *cParse) {
     brpc::ChannelOptions options;
 
     std::string connection_type, time_out_str, max_retry_str;
-    cParse->getValue(CONNECTION_TYPE, connection_type);
-    cParse->getValue(TIME_OUT, time_out_str);
-    cParse->getValue(MAX_RETRY, max_retry_str);
+    cParse->getValue(CONNECTION_TYPE_, connection_type);
+    cParse->getValue(TIME_OUT_, time_out_str);
+    cParse->getValue(MAX_RETRY_, max_retry_str);
 
     options.connection_type = connection_type;
     if(!time_out_str.empty()) {
@@ -81,9 +82,32 @@ int ConLogin::init(ConfigParse *cParse) {
     return 0;
 }
 
-int ConLogin::auth(const std::string &username, const std::string &token) {
-    //TODO
-    return 0;
+bool ConLogin::auth(const std::string &u_name, const std::string &token) {
+    LoginServer::AuthService_Stub stub(&_channel);
+    LoginServer::AuthRequest request;
+    LoginServer::AuthResponse response;
+    brpc::Controller cntl;
+
+    std::string msg = "{"
+                            "\"u_name\": \"" + u_name + "\", "
+                            "\"token\": \"" + token + "\""
+                        "}";
+
+    request.set_message(msg);
+
+    stub.Auth(&cntl, &request, &response, nullptr);
+    if(!cntl.Failed()) {
+        if(response.status() != LOGIN_SUCCESS) {
+            LOG(ERROR) << "Fail to auth";
+            return false;
+        }
+    } 
+    else {
+        LOG(ERROR) << "Fail to call Auth";
+        return false;
+    }
+    
+    return true;
 }
 
 void ConLogin::firstSend() {

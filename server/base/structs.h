@@ -73,8 +73,9 @@ enum IM_STATUS {
 };
 
 enum GATE_STATUS {
-    GATE_STATUS_OK = 0,
-    GATE_STATUS_FAIL
+    GATE_OK = 0,
+    GATE_FAIL,
+    GATE_CLIENT_FAIL
 };
 
 struct UserRegisterInfo {
