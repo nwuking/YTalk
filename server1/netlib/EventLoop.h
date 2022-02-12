@@ -14,6 +14,7 @@
 
 #include "../base/TimeStamp.h"
 #include "Types.h"
+#include "TimerId.h"
 
 #include <thread>
 #include <memory>
@@ -34,6 +35,9 @@ class TimerQueue;
 class EventLoop 
 {
 public:
+    typedef std::function<void()> Functor;
+
+public:
     /**
      * @brief one loop per thread，在每一个线程里创建一个EventLoop对象
      * 
@@ -51,6 +55,26 @@ public:
      */
     void quit();
 
+    void runInLoop(const Functor &cb);
+
+    void queueInLoop(const Functor &cb);
+
+    TimerId runAt(const base::TimeStamp &when, const TimerCallBack &cb);
+
+    TimerId runAfter(std::int64_t delay, const TimerCallBack &cb);
+
+    TimerId runEvery(std::int64_t interval, const TimerCallBack &cb);
+
+    void cancle(TimerId id, bool off);
+
+    void remove(TimerId id);
+
+    void updateChannel(Channel *channel);
+
+    void removeChannel(Channel *channel);
+
+    bool hasChannel(Channel *channel);
+
 public:
     void assertInLoopThread() {
         if(!isInLoopThread()) {
@@ -60,6 +84,14 @@ public:
 
     bool isInLoopThread() {
         return m_threadId == std::this_thread::get_id();
+    }
+
+    base::TimeStamp pollReturnTime() {
+        return m_pollReturnTime;
+    }
+
+    bool eventHanding() {
+        return m_eventHanding;
     }
 
 private:
@@ -83,13 +115,15 @@ private:
     bool                        m_eventHanding;
     const std::thread::id       m_threadId;
     base::TimeStamp             m_pollReturnTime;
-    std::unique_ptr<EPoller>     m_pollerPtr;
+    std::unique_ptr<EPoller>    m_pollerPtr;
     std::unique_ptr<TimerQueue> m_timerQueuePtr;
     SOCKET                      m_wakeupFd;
     std::unique_ptr<Channel>    m_wakeupChannelPtr;
-    CHANNEL_ARR                m_activeChannels;
+    CHANNEL_ARR                 m_activeChannels;
     Channel*                    m_curActiveChannelPtr;
     std::mutex                  m_mutex;
+    bool                        m_callingPendingFunctors;
+    std::vector<Functor>        m_pendingFunctors;
 
 };   // class EventLoop
 

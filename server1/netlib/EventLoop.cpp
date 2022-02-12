@@ -19,6 +19,7 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sstream>
 
 namespace YTalk
 {
@@ -50,7 +51,8 @@ EventLoop::EventLoop() :
     m_wakeupFd(createEventFd()),
     m_wakeupChannelPtr(new Channel(this, m_wakeupFd)),
     m_curActiveChannelPtr(nullptr),
-    m_mutex()
+    m_mutex(),
+    m_callingPendingFunctors(false)
 {
     LOG_DEBUG("EventLoop created in thread=%d", m_threadId);
     if(t_loopInThisThread) {
@@ -112,19 +114,100 @@ void EventLoop::handleRead() {
 }
 
 void EventLoop::printActiveChannels() {
-    //TODO
+    for(Channel *channel : m_activeChannels) {
+        LOG_TRACE("{%s}", channel->events2String().c_str());
+    }
 }
 
 void EventLoop::doPendingFunctors() {
-    //TODO
+    std::vector<Functor> functors;
+    m_callingPendingFunctors = true;
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        functors.swap(m_pendingFunctors);
+    }
+    for(std::size_t i = 0; i < functors.size(); ++i) {
+        functors[i]();
+    }
+    m_callingPendingFunctors = false;
 }
 
 void EventLoop::wakeup() {
-    //TODO
+    std::uint64_t one = 1;
+    ssize_t n = sockets::write(m_wakeupFd, &one, sizeof one);
+    if (n != sizeof one) {
+        LOG_ERROR("EventLoop::wakeup() writes %d bytes instead of 8", n);
+    }
 }
 
 void EventLoop::abortNotInLoopThread() {
-    //TODO
+    std::ostringstream str;
+    str << "EventLoop::abortNotInLoopThread - EventLoop " << this
+            << " was created in threadId_ = " << m_threadId
+            << ", current thread id = " <<  std::this_thread::get_id();
+    LOG_FATAL("%s", str.str().c_str());   
+}
+
+void EventLoop::runInLoop(const Functor &cb) {
+    if(isInLoopThread()) {
+        cb();
+    }
+    else {
+        queueInLoop(cb);
+    }
+}
+
+void EventLoop::queueInLoop(const Functor &cb) {
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_pendingFunctors.push_back(cb);
+    }
+    if(!isInLoopThread() || m_callingPendingFunctors) {
+        wakeup();
+    }
+}
+
+TimerId EventLoop::runAt(const TimeStamp &when, const TimerCallBack &cb) {
+    return m_timerQueuePtr->addTimer(cb, when, 0, 1);
+}
+
+TimerId EventLoop::runAfter(std::int64_t delay, const TimerCallBack &cb) {
+    TimeStamp time(addTime(TimeStamp::now(), delay));
+    return runAt(time, std::move(cb));
+}
+
+TimerId EventLoop::runEvery(std::int64_t interval, const TimerCallBack &cb) {
+    TimeStamp time(addTime(TimeStamp::now(), interval));
+    return m_timerQueuePtr->addTimer(std::move(cb), time, interval, -1);
+}
+
+void EventLoop::cancle(TimerId id, bool off) {
+    m_timerQueuePtr->cancle(id, off);
+}
+
+void EventLoop::remove(TimerId id) {
+    m_timerQueuePtr->removeTimer(id);
+}
+
+void EventLoop::updateChannel(Channel *channel) {
+    if(channel->getOwnerLoop() != this) {
+        return;
+    }
+    assertInLoopThread();
+    m_pollerPtr->updateChannel(channel);
+}
+
+void EventLoop::removeChannel(Channel *channel) {
+    if(channel->getOwnerLoop() != this) {
+        return;
+    }
+    assertInLoopThread();
+    m_pollerPtr->removeChannel(channel);
+}
+
+bool EventLoop::hasChannel(Channel *channel) {
+    assertInLoopThread();
+    return m_pollerPtr->hasChannel(channel);
 }
 
 }   // namespace netlib

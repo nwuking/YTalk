@@ -47,8 +47,8 @@ public:
      * @brief 取消定时器
      * 
      */
-    void cancle() {
-        m_isCancled = false;
+    void cancle(bool off) {
+        m_isCancled = off;
     }
 
     base::TimeStamp expiration() const { return m_expiration; }

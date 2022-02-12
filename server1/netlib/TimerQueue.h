@@ -42,12 +42,21 @@ public:
     TimerId addTimer(const TimerCallBack &cb, base::TimeStamp when, std::int64_t interval, int64_t repeatCount);
     TimerId addTimer(TimerCallBack &&cb, base::TimeStamp when, std::int64_t interval, int64_t repeatCount);
 
+    void removeTimer(TimerId id);
+
+    void cancle(TimerId id, bool off);
 
 private:
     TimerQueue(const TimerQueue &obj) = delete;
     TimerQueue& operator=(const TimerQueue &obj) = delete;
 
-    void addTimer(Timer *timer);
+    void addTimerInLoop(Timer *timer);
+
+    void removeTimerInLoop(TimerId id);
+
+    void cancelTimerInLoop(TimerId id, bool off);
+
+    void insert(Timer *timer);
 
 private:
     typedef std::pair<base::TimeStamp, Timer*>      ENTRY;
