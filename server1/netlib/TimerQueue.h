@@ -14,6 +14,9 @@
 
 #include "../base/TimeStamp.h"
 
+#include "CallBacks.h"
+#include "TimerId.h"
+
 #include <set>      // 利用set的底层红黑树管理Timer
 
 namespace YTalk
@@ -30,10 +33,21 @@ class TimerQueue
 public:
     TimerQueue(EventLoop *loop);
     ~TimerQueue();
+    /**
+     * @brief 时间到的时候，允许timer
+     * 
+     */
+    void runTimer();
+
+    TimerId addTimer(const TimerCallBack &cb, base::TimeStamp when, std::int64_t interval, int64_t repeatCount);
+    TimerId addTimer(TimerCallBack &&cb, base::TimeStamp when, std::int64_t interval, int64_t repeatCount);
+
 
 private:
     TimerQueue(const TimerQueue &obj) = delete;
     TimerQueue& operator=(const TimerQueue &obj) = delete;
+
+    void addTimer(Timer *timer);
 
 private:
     typedef std::pair<base::TimeStamp, Timer*>      ENTRY;
@@ -41,6 +55,7 @@ private:
 
 private:
     EventLoop*      m_loop;
+    TIMER_LIST      m_timers;
 };    // class TimerQueue
 
 

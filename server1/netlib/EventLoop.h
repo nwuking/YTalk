@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 #include <mutex>
+#include <atomic>
 
 namespace YTalk
 {
@@ -27,7 +28,7 @@ namespace netlib
 {
 
 class Channel;
-class Poller;
+class EPoller;
 class TimerQueue;
 
 class EventLoop 
@@ -50,20 +51,43 @@ public:
      */
     void quit();
 
+public:
+    void assertInLoopThread() {
+        if(!isInLoopThread()) {
+            abortNotInLoopThread();
+        }
+    }
+
+    bool isInLoopThread() {
+        return m_threadId == std::this_thread::get_id();
+    }
+
 private:
-    typedef std::vector<Channel*> CHANNEL_LIST;
+    void handleRead();     // for wakeupFd;
+
+    void printActiveChannels();
+
+    void doPendingFunctors();
+
+    void wakeup();
+
+    void abortNotInLoopThread();
+
+private:
+    typedef std::vector<Channel*> CHANNEL_ARR;
 
 private:
     bool                        m_isLooping;
-    bool                        m_isQuited;
+    //bool                        m_isQuited;
+    std::atomic<bool>           m_isQuited;
     bool                        m_eventHanding;
     const std::thread::id       m_threadId;
     base::TimeStamp             m_pollReturnTime;
-    std::unique_ptr<Poller>     m_pollerPtr;
+    std::unique_ptr<EPoller>     m_pollerPtr;
     std::unique_ptr<TimerQueue> m_timerQueuePtr;
     SOCKET                      m_wakeupFd;
     std::unique_ptr<Channel>    m_wakeupChannelPtr;
-    CHANNEL_LIST                m_activeChannels;
+    CHANNEL_ARR                m_activeChannels;
     Channel*                    m_curActiveChannelPtr;
     std::mutex                  m_mutex;
 

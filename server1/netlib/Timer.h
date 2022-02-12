@@ -32,7 +32,7 @@ public:
      * 
      * @param cb 定时器的回调函数
      * @param when 定时时间
-     * @param interval 
+     * @param interval 单位是微秒
      * @param repeatConut 定时器重复次数
      */
     Timer(const TimerCallBack &cb, base::TimeStamp when, std::int64_t interval, std::int64_t repeatConut = -1);

@@ -15,6 +15,8 @@
 #include <functional>
 #include <memory>
 
+#include "../base/TimeStamp.h"
+
 namespace YTalk
 {
 
@@ -22,6 +24,9 @@ namespace netlib
 {
 
 typedef std::function<void()>                           TimerCallBack;
+
+typedef std::function<void()>                           EventCallBack;
+typedef std::function<void(base::TimeStamp)>            ReadEventCallBack;
 
 } // namespace netlib
 
