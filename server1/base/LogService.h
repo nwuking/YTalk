@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef YTalk_LOG_SERVICE_H
-#define YTalk_LOG_SERVICE_H
+#ifndef YTALK_LOG_SERVICE_H
+#define YTALK_LOG_SERVICE_H
 
 #include <cstdint>
 #include <cstdio>
