@@ -45,7 +45,7 @@ public:
 
     void start(int wokers = 4);
 
-    void stop();
+    //void stop();
 
     void removeConnection(const TcpConnectionPtr &conn);
 
