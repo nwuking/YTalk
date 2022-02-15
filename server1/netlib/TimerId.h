@@ -25,21 +25,38 @@ class Timer;
 class TimerId 
 {
 public:
+    /**
+     * @brief Construct a new Timer Id object
+     * 
+     */
     TimerId() : m_timerPtr(nullptr), m_sequence(0) {
         //TODO
     }
-
+    /**
+     * @brief Construct a new Timer Id object
+     * 
+     * @param timer 
+     * @param sequence 
+     */
     TimerId(Timer *timer, std::int64_t sequence) :
         m_timerPtr(timer),
         m_sequence(sequence)
     {
         //TODO
     }
-
+    /**
+     * @brief Get the Timer object
+     * 
+     * @return Timer* 
+     */
     Timer* getTimer() {
         return m_timerPtr;
     }
-
+    /**
+     * @brief Get the Sequence object
+     * 
+     * @return std::int64_t 
+     */
     std::int64_t getSequence() {
         return m_sequence;
     }

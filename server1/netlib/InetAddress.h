@@ -1,7 +1,7 @@
 /**
  * @file InetAddress.h
  * @author nwuking@qq.com
- * @brief 
+ * @brief 网络地址的封装
  * @version 0.1
  * @date 2022-02-12
  * 

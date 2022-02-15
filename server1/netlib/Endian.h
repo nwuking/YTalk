@@ -1,7 +1,7 @@
 /**
  * @file Endian.h
  * @author nwuking@qq.com
- * @brief 
+ * @brief 字节序列的相应函数
  * @version 0.1
  * @date 2022-02-12
  * 

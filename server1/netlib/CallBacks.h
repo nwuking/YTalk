@@ -1,7 +1,7 @@
 /**
  * @file CallBacks.h
  * @author nwuking@qq.com
- * @brief 
+ * @brief 一些类型的别名，用于定义回调函数
  * @version 0.1
  * @date 2022-02-11
  * 

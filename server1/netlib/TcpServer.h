@@ -40,47 +40,106 @@ public:
     };
 
 public:
+    /**
+     * @brief Construct a new Tcp Server object
+     * 
+     * @param loop 
+     * @param listenAddr 
+     * @param name 
+     * @param option 
+     */
     TcpServer(EventLoop *loop, const InetAddress &listenAddr, const std::string &name, Option option = kReusePort);
+    /**
+     * @brief Destroy the Tcp Server object
+     * 
+     */
     ~TcpServer();
-
+    /**
+     * @brief 
+     * 
+     * @param wokers 
+     */
     void start(int wokers = 4);
 
     //void stop();
-
+    /**
+     * @brief 
+     * 
+     * @param conn 
+     */
     void removeConnection(const TcpConnectionPtr &conn);
 
 public:
+    /**
+     * @brief 
+     * 
+     * @return const std::string& 
+     */
     const std::string& ipPort() {
         return m_ipPort;
     }
-
+    /**
+     * @brief 
+     * 
+     * @return const std::string& 
+     */
     const std::string& name() {
         return m_name;
     }
-
+    /**
+     * @brief Get the Loop object
+     * 
+     * @return EventLoop* 
+     */
     EventLoop* getLoop() {
         return m_loopPtr;
     }
-
+    /**
+     * @brief Set the Thread Init Call Back object
+     * 
+     * @param cb 
+     */
     void setThreadInitCallBack(const ThreadInitCallBack &cb) {
         m_threadInitCalBack = cb;
     }
-
+    /**
+     * @brief Set the Connection Call Back object
+     * 
+     * @param cb 
+     */
     void setConnectionCallBack(const ConnectionCallBack &cb) {
         m_connectionCallBack = cb;
     }
-
+    /**
+     * @brief Set the Message Call Back object
+     * 
+     * @param cb 
+     */
     void setMessageCallBack(const MessageCallback &cb) {
         m_messageCallBack = cb;
     }
-
+    /**
+     * @brief Set the Write Complete Call Back object
+     * 
+     * @param cb 
+     */
     void setWriteCompleteCallBack(const WriteCompleteCallback &cb) {
         m_writeCompleteCallBack = cb;
     }
 
 private:
+    /**
+     * @brief 
+     * 
+     * @param sockFd 
+     * @param peerAddr 
+     */
     void newConnection(int sockFd, const InetAddress &peerAddr);
-
+    /**
+     * @brief 
+     * 
+     * @param conn 
+     */
     void removeConnectionInLoop(const TcpConnectionPtr &conn);
 
 private:

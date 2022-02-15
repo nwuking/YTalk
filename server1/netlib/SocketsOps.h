@@ -1,7 +1,7 @@
 /**
  * @file SocketsOps.h
  * @author nwuking@qq.com
- * @brief 
+ * @brief 操作套接字的相关方法
  * @version 0.1
  * @date 2022-02-12
  * 

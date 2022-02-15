@@ -140,8 +140,7 @@ int Connector::removeAndResetChannel() {
     m_channelPtr->disableAll();
     m_channelPtr->remove();
     int sockfd = m_channelPtr->fd();
-    // Can't reset channel_ here, because we are inside Channel::handleEvent
-    m_loopPtr->queueInLoop(std::bind(&Connector::resetChannel, shared_from_this())); // FIXME: unsafe
+    m_loopPtr->queueInLoop(std::bind(&Connector::resetChannel, shared_from_this())); 
     return sockfd;
 }
 

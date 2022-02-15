@@ -50,11 +50,38 @@ public:
     void cancle(bool off) {
         m_isCancled = off;
     }
-
-    base::TimeStamp expiration() const { return m_expiration; }
-    int64_t getRepeatCount() const { return m_repeatCount; }
-    int64_t sequence() const { return m_sequence; }
-    static int64_t numCreated() { return s_numCreated; }
+    /**
+     * @brief 
+     * 
+     * @return base::TimeStamp 
+     */
+    base::TimeStamp expiration() const { 
+        return m_expiration; 
+    }
+    /**
+     * @brief Get the Repeat Count object
+     * 
+     * @return int64_t 
+     */
+    int64_t getRepeatCount() const { 
+        return m_repeatCount; 
+    }
+    /**
+     * @brief 
+     * 
+     * @return int64_t 
+     */
+    int64_t sequence() const { 
+        return m_sequence; 
+    }
+    /**
+     * @brief 
+     * 
+     * @return int64_t 
+     */
+    static int64_t numCreated() { 
+        return s_numCreated; 
+    }
 
 private:
     Timer(const Timer &timer) = delete;
