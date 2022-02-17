@@ -27,6 +27,7 @@ namespace base
 
 #define GET_MACRO(_0, _1, _2, _3, NAME, ...) NAME
 #define LOG_SERVICE_INIT(...) GET_MACRO(_0, ##__VA_ARGS__, LOG_SERVICE_INIT_3, LOG_SERVICE_INIT_2, LOG_SERVICE_INIT_1, LOG_SERVICE_INIT_0)(__VA_ARGS__)
+#define LOG_SERVICE_STOP()                                  LogService::stop()
 
 #define LOG_TRACE(...)      LogService::output(LOG_LEVEL_TRACE, __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_DEBUG(...)      LogService::output(LOG_LEVEL_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
