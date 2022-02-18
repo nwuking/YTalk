@@ -46,7 +46,21 @@ public:
      * @return std::int32_t 
      */
     std::int32_t getClientTypeByUserId(std::int32_t u_id);
-
+    /**
+     * @brief 通过用户id和客户端类型获取在线用户的session
+     * 
+     * @param u_id 
+     * @param clienttype 
+     * @return std::shared_ptr<ChatSession> 返回在线用户的session
+     */
+    std::shared_ptr<ChatSession> getSessionByUserIdAndClientType(std::int32_t u_id, std::int32_t clienttype);
+    /**
+     * @brief 因为支持不同的端同时在线，u_id可能会有多个session,get its
+     * 
+     * @param u_id 
+     * @param sessions 
+     */
+    void getSessionsByUserId(std::int32_t u_id, std::list<std::shared_ptr<ChatSession>> &sessions);
 private:
     /**
      * @brief 新连接到来或者断开连接的时候调用

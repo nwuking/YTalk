@@ -106,6 +106,25 @@ std::int32_t ChatService::getClientTypeByUserId(std::int32_t u_id) {
 
     return clientType;
 }
+
+std::shared_ptr<ChatSession> ChatService::getSessionByUserIdAndClientType(std::int32_t u_id, std::int32_t clienttype) {
+    std::lock_guard<std::mutex> lock(m_sessionMutex);
+    for(const auto &session : m_sessions) {
+        if(session->getUserId() == u_id && session->getClientType() == clienttype) {
+            return session;
+        }
+    }
+    return nullptr;
+}
+
+void ChatService::getSessionsByUserId(std::int32_t u_id, std::list<std::shared_ptr<ChatSession>> &sessions) {
+    std::lock_guard<std::mutex> lock(m_sessionMutex);
+    for(const auto &session : m_sessions) {
+        if(session->getUserId() == u_id && session->vaild()) {
+            sessions.push_back(session);
+        }
+    }
+}
     
 }   // namespace IMServer
 

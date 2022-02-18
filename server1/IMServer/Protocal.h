@@ -38,9 +38,10 @@ enum MsgOrder {
     MSG_ORDER_UNKNOW = 0, 
     MSG_ORDER_REGISTER,                             // 注册
     MSG_ORDER_LOGIN,                                // 登录
+    MSG_ORDER_KICK,                                 // 踢人
     MSG_ORDER_HEARTBEAT,                            // 心跳包
     MSG_ORDER_FIND_FRIEND,                          // 查找好友
-    MSG_ORDER_ADD_FRIEND,                           // 加好友
+    MSG_ORDER_ADD_FRIEND,                           // 加好友或者群
     MSG_ORDER_DEL_FRIEND,                           // 删好友
     MSG_ORDER_CHAT,                                 // 单聊
     MSG_ORDER_GROUP_CHAT,                           // 群聊
@@ -57,7 +58,6 @@ enum MsgOrder {
 typedef struct DataHead {
     std::int32_t            dh_msgOrder;                    // 消息指令
     std::int32_t            dh_seq;
-    std::int32_t            dh_friendId;                    // 好友id或者群id 
     char                    dh_reserve[16];                 // 预留空间，
 } DataHead;
 

@@ -38,6 +38,8 @@ typedef struct User {
     std::int32_t            u_birthday;     // 用户生日
     std::string             u_teaminfo;     // 用户分组信息，群则为空
     std::int32_t            g_ownerid;      // 群主id
+    std::int32_t            u_faceType;     // 头像类型
+    std::string             u_face;         // 头像
     std::list<Friend>       u_friends;      // 好友列表
 } User;
 
@@ -50,6 +52,8 @@ enum ClientType {
 
 typedef struct OnlineUserInfo {
     std::int32_t            u_id;           // 用户id
+    std::string             u_name;
+    std::string             u_nickname;
     std::int32_t            u_clientType;   // 客户端类型，2为Android端
     std::int32_t            u_status;       // 在线状态，0离线 1在线 2忙碌 3离开 4隐身
 } OnlineUserInfo;

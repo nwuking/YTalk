@@ -68,6 +68,17 @@ public:
     std::int32_t getClientType() {
         return m_onlineUserInfo.u_clientType;
     }
+    /**
+     * @brief 获取本session的序列号
+     * 
+     * @return std::int32_t 
+     */
+    std::int32_t getSeq() {
+        return m_seq;
+    }
+    void setInvaild() {
+        m_onlineUserInfo.u_id = 0;
+    }
 private:
     ChatSession(const ChatSession &obj) = delete;
     ChatSession& operator=(const ChatSession &obj) = delete;
@@ -100,14 +111,14 @@ private:
      */
     void toHeartBeat(const std::shared_ptr<netlib::TcpConnection> &conn);
     /**
-     * @brief 查找好友
+     * @brief 根据u_name或者u_nickname查找好友
      * 
      * @param conn 
      * @param data 
      */
     void toFindFriend(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data);
     /**
-     * @brief 加好友
+     * @brief 加好友，发出好友申请
      * 
      * @param conn 
      * @param data 
@@ -183,7 +194,14 @@ private:
      * @param data 
      */
     void toChangeFriendRemarks(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data);
-    //void
+    /**
+     * @brief 加群，在toAddFriend里被调用
+     * 
+     * @param conn 
+     * @param g_id 
+     */
+    void toAddGroup(const std::shared_ptr<netlib::TcpConnection> &conn, std::int32_t g_id);
+
 private:
     std::int32_t                        m_sessionId;
     std::int32_t                        m_seq;

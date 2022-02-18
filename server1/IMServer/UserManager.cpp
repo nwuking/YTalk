@@ -14,6 +14,8 @@
 #include "../base/Singleton.h"
 #include "../mysql/MysqlManager.h"      
 
+#include <memory>
+
 #define BASE_GROUP_ID 0x0fffffff
 
 namespace YTalk
@@ -60,6 +62,43 @@ void UserManager::getFriendIdByUserId(std::int32_t u_id, std::vector<std::int32_
             break;
         }
     }
+}
+
+void UserManager::getUserByUserName(const std::string &u_name, User &user) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(const auto &u : m_users) {
+        if(u.u_name == u_name) {
+            user = u;
+            return;
+        }
+    }
+}
+
+int UserManager::registerForUser(const User &newUser) {
+    // 将用户注册信息写到数据库
+    int u_id = ++m_baseUserId;
+    User user = newUser;
+    std::string sql = "INSERT INTO user(u_id, u_name, u_password, u_nickname, u_rg_time) "
+                      "VALUES(" + std::to_string(u_id) + ", "
+                              "'" + user.u_name + "', "
+                              "'" + user.u_password + "', "
+                              "'" + user.u_nickname + "', "
+                              "NOW())";
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    if(!conn || !conn->execute(sql)) {
+        LOG_ERROR("Error to insert user");
+        return 1;
+    }
+    Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
+
+    // 设置一些字段
+    user.u_id = u_id;
+    user.u_gender = "1";
+    user.g_ownerid = 0;
+
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_users.push_back(user);
+   return 0;
 }
 
 int UserManager::getAllUsers() {
