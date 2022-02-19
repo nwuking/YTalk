@@ -192,6 +192,11 @@ int ChatSession::handleData(const std::shared_ptr<netlib::TcpConnection> &conn, 
                     case MSG_ORDER_DEL_FRIEND:
                         // 删好友
                         toDelFriend(conn, data);
+                        break;
+                    case MSG_ORDER_RESPONSE_FRIEND_APPLY:
+                        // 回复好友申请
+                        toResponseFriendApply(conn, data);
+                        break;
                     case MSG_ORDER_CHAT:
                         // 单聊
                         toChat(conn, data);
@@ -227,6 +232,14 @@ int ChatSession::handleData(const std::shared_ptr<netlib::TcpConnection> &conn, 
                     case MSG_ORDER_FRIEND_REMARKS_CHANGE:
                         // 修改好友备注
                         toChangeFriendRemarks(conn, data);
+                        break;
+                    case MSG_ORDER_GET_FRIENDS_LIST:
+                        // 获取好友列表
+                        toGetFriendsList(conn, data);
+                        break;
+                    case MSG_ORDER_GET_GROUP_MEMBER:
+                        // 获取指定群成员
+                        toGetGroupMember(conn, data);
                         break;
                     default:
                         LOG_ERROR("Error Msg Order from client:%s", conn->peerAddress().toIpPort().c_str());
@@ -602,12 +615,277 @@ void ChatSession::toAddFriend(const std::shared_ptr<netlib::TcpConnection> &conn
     }
 }
 
+void ChatSession::toAddGroup(const std::shared_ptr<TcpConnection> &conn, std::int32_t g_id) {
+/**
+ * @brief 在toAddFriend里被调用， 加群不需要群主同意
+ *       一个群相当于一个特殊的好友
+ */
+    // 建立好友关系，同步到数据库
+    if(Singleton<UserManager>::getInstance().buildFriendRelationship(m_onlineUserInfo.u_id, g_id)) {
+        // 建立好友关系失败
+        LOG_ERROR("Error to build relationship friends(u_id:%d, g_id:%d)", m_onlineUserInfo.u_id, g_id);
+        return;
+    }
+    
+    User gUser;
+    if(Singleton<UserManager>::getInstance().getUserByUserId(g_id, gUser)) {
+        LOG_ERROR("error to get group_user");
+        return;
+    }
+    // 给群友推送新成员消息
+    std::vector<std::int32_t> groupMemberIds;
+    Singleton<UserManager>::getInstance().getFriendIdByUserId(g_id, groupMemberIds);
+    for(const auto &gm_id : groupMemberIds) {
+        std::list<std::shared_ptr<ChatSession>> sessions;
+        Singleton<ChatService>::getInstance().getSessionsByUserId(gm_id, sessions);
+        
+        for(const auto &session : sessions) {
+            if(session) {
+                session->sendWhenFriendStatusChange(g_id, 3);
+            }
+        }
+    }
+    
+}
+
 void ChatSession::toDelFriend(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data) {
-    //TODO
+/**
+ * @brief 删除好友、退群
+ *      {"u_id": 123}
+ */
+    rapidjson::Document d;
+    if(d.Parse(data.c_str()).HasParseError()) {
+        // 登录数据错误，不处理
+        LOG_ERROR("Error add_friend data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    // 检查数据，
+    if(!d.HasMember("u_id") || !d["u_id"].IsInt()) {
+        LOG_ERROR("Error add_friend data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+
+    std::int32_t f_id = d["u_id"].GetInt();
+
+    // 解除好友关系，同步得到数据库和内存
+    if(Singleton<UserManager>::getInstance().releaseFriendRelationship(m_onlineUserInfo.u_id, f_id)) {
+        LOG_ERROR("error to delete friend:%d", f_id);
+        return;
+    }
+
+    User fUser;
+    if(Singleton<UserManager>::getInstance().getUserByUserId(f_id, fUser)) {
+        LOG_ERROR("error to get uer:%d", f_id);
+        return;
+    }
+
+    // 给主动删除的一方发送通知
+    DataHead dh;
+    bzero(&dh, sizeof(DataHead));
+    dh.dh_msgOrder = MSG_ORDER_DEL_FRIEND;
+    dh.dh_seq = m_seq;
+    std::string rspMsg(reinterpret_cast<char*>(&dh), sizeof(dh));
+    std::string msg = "{"
+                            "\"u_id\": " + std::to_string(f_id) + ", "
+                            "\"type\: 5, "
+                            "\"u_name\": \"" + fUser.u_name + "\""
+                        "}";
+    rspMsg += msg;
+    send(rspMsg);
+
+    // 给被删除的一方发送通知
+    if(f_id < 0x0fffffff) {
+        // 删好友
+        std::list<std::shared_ptr<ChatSession>> fSessions;
+        Singleton<ChatService>::getInstance().getSessionsByUserId(f_id, fSessions);
+
+        msg = "{"
+                    "\"u_id\": " + std::to_string(m_onlineUserInfo.u_id) + ", "
+                    "\"type\: 5, "
+                    "\"u_name\": \"" + m_onlineUserInfo.u_name + "\""
+                "}";
+        std::string rspMsg1(reinterpret_cast<char*>(&dh), sizeof(dh));
+        rspMsg1 += msg;
+
+        for(auto &fSession : fSessions) {
+            // 只用给在线用户推送这个消息，不用管离线的
+            if(fSession && fSession->vaild()) {
+                fSession->send(rspMsg1);
+
+                LOG_INFO("send to user:%d, MsgOrder=DELFRIEND", f_id);
+            }
+        }
+    }
+    else {
+        // 退群, 只给在线的群成员推送消息
+        std::vector<std::int32_t> groupMemberIds;
+        Singleton<UserManager>::getInstance().getFriendIdByUserId(f_id, groupMemberIds);
+        for(const auto &gm_id : groupMemberIds) {
+            std::list<std::shared_ptr<ChatSession>> gm_sessions;
+            Singleton<ChatService>::getInstance().getSessionsByUserId(gm_id, gm_sessions);
+            for(auto &gm_session : gm_sessions) {
+                if(gm_session && gm_session->vaild()) {
+                    gm_session->sendWhenFriendStatusChange(f_id, 3);
+                }
+            }
+        }
+    }
+}
+
+void ChatSession::toResponseFriendApply(const std::shared_ptr<TcpConnection> &conn, const std::string &data) {
+/**
+ * @brief 回复加好友的申请, accept=1表示同意，其它不同意
+ *      {"u_id": 123, "accept": 1}
+ */
+    rapidjson::Document d;
+    if(d.Parse(data.c_str()).HasParseError()) {
+        // 登录数据错误，不处理
+        LOG_ERROR("Error rsp_friend_apply data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    // 检查数据，
+    if(!d.HasMember("u_id") || !d["u_id"].IsInt()) {
+        LOG_ERROR("Error rsp_friend_apply data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    if(!d.HasMember("accept") || !d["accept"].IsInt()) {
+        LOG_ERROR("Error rsp_friend_apply data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+
+    std::int32_t f_id = d["u_id"].GetInt();
+    std::int32_t accept = d["accept"].GetInt();
+
+    if(accept == 1) {
+        // 同意好友申请，与f_id建立好友关系
+        if(Singleton<UserManager>::getInstance().buildFriendRelationship(m_onlineUserInfo.u_id, f_id)) {
+            LOG_ERROR("error to build relation, user:%d", m_onlineUserInfo.u_id);
+            return;
+        }
+    }
+
+    // 告诉自己好友添加成功
+    User fUser;
+    if(Singleton<UserManager>::getInstance().getUserByUserId(f_id, fUser)) {
+        // 获取好友信息失败，无法通知，不要紧
+        return;
+    }
+    DataHead dh;
+    bzero(&dh, sizeof(DataHead));
+    dh.dh_msgOrder = MSG_ORDER_RESPONSE_FRIEND_APPLY;
+    dh.dh_seq = m_seq;
+    std::string rspMsg(reinterpret_cast<char*>(&dh), sizeof(dh));
+    std::string selfData = "{"
+                                "\"u_id\": " + std::to_string(f_id) + ", "
+                                "\"u_name\": \"" + fUser.u_name + "\", "
+                                "\"accept\": " + std::to_string(accept) + " "
+                            "}";
+    rspMsg += selfData;
+    send(rspMsg);
+
+    LOG_INFO("response to user:%d, MsgOrder:RESPONSE_FRIEND_APPLY", m_onlineUserInfo.u_id);
+
+    // 通知对方好友添加成功
+    std::string rspMsg1(reinterpret_cast<char*>(&dh), sizeof(dh));
+    std::string fData = "{"
+                                "\"u_id\": " + std::to_string(m_onlineUserInfo.u_id) + ", "
+                                "\"u_name\": \"" + m_onlineUserInfo.u_name + "\", "
+                                "\"accept\": " + std::to_string(accept) + " "
+                            "}";
+    rspMsg1 += fData;
+    std::list<std::shared_ptr<ChatSession>> fSessions;
+    Singleton<ChatService>::getInstance().getSessionsByUserId(f_id, fSessions);
+    if(fSessions.empty()) {
+        // 用户离线，缓存通知
+        Singleton<CacheManager>::getInstance().addCacheNotify(f_id, rspMsg1);
+        LOG_INFO("user:%d offline, cache notify:%s", f_id, rspMsg1.c_str());
+        return;
+    }
+    else {
+        // 对方在线
+        for(auto &fSession : fSessions) {
+            fSession->send(rspMsg1);
+        }
+        LOG_INFO("send notify:%s to user:%d", rspMsg1.c_str(), f_id);
+    }
 }
 
 void ChatSession::toChat(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data) {
-    //TODO
+/**
+ * @brief 单聊, 消息格式
+ *      {
+ *          "acceptor": 接收者，
+ *          "sender": 发送者
+ *          "msgType": 0,     消息类型，0为未知类型，1文本，2窗口抖动，3文件
+ *          "time": 1234123,
+ *          "clientType": 0   客户端类型，0未知，2安卓端
+ *          "content": [
+ *                         {"msgText": text1},
+ *                         {"msgText": text2},
+ *                         {.....}
+ *                     ]
+ *       }
+ */
+    rapidjson::Document d;
+    if(d.Parse(data.c_str()).HasParseError()) {
+        // 数据错误
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    // 检查数据
+    if(!d.HasMember("acceptor") || !d["acceptor"].IsInt() || d["acceptor"].GetInt() >= 0x0fffffff) {
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    if(!d.HasMember("time") || !d["time"].IsInt()) {
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    if(!d.HasMember("sender") || !d["sender"].IsInt()) {
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+
+    std::int32_t a_id = d["acceptor"].GetInt();
+    std::int32_t s_id = d["sender"].GetInt();
+
+    // 因为网络的差异，消息的确切时间以服务端为准
+    unsigned int now = static_cast<unsigned int>(time(nullptr));
+    d["time"].SetUint(now);
+
+    rapidjson::StringBuffer sb;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
+    d.Accept(writer);
+    
+    std::string newData(sb.GetString(), sb.GetSize());
+    
+    DataHead dh;
+    bzero(&dh, sizeof(DataHead));
+    dh.dh_msgOrder = MSG_ORDER_CHAT;
+    dh.dh_seq = m_seq;
+    std::string rsp(reinterpret_cast<char*>(&dh), sizeof(dh));
+
+    rsp += newData;
+
+    // 先将消息保存到数据库
+    if(Singleton<UserManager>::getInstance().saveChatMsg2DB(s_id, a_id, rsp)) {
+        LOG_ERROR("fail to save msg:sender=%d, acceptor=%d, data=%s", s_id, a_id, rsp.c_str());
+    }
+
+    std::list<std::shared_ptr<ChatSession>> a_sessions;
+    Singleton<ChatService>::getInstance().getSessionsByUserId(a_id, a_sessions);
+    if(a_sessions.empty()) {
+        // 对方离线，缓存消息
+        Singleton<CacheManager>::getInstance().addCacheMsg(a_id, rsp);
+        LOG_INFO("cache chat msg: sender=%d, acceptor=%d, data=%s", s_id, a_id, rsp.c_str());
+    }
+    else {
+        for(auto &a_session : a_sessions) {
+            if(a_session && a_session->vaild()) {
+                a_session->send(rsp);
+            }
+        }
+    }
 } 
 
 void ChatSession::toGroupChat(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data) {
@@ -639,6 +917,14 @@ void ChatSession::toMoveFriend2OtherTeam(const std::shared_ptr<netlib::TcpConnec
 }
 
 void ChatSession::toChangeFriendRemarks(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data) {
+    //TODO
+}
+
+void ChatSession::toGetFriendsList(const std::shared_ptr<TcpConnection> &conn, const std::string &data) {
+    //TODO
+}
+
+void ChatSession::toGetGroupMember(const std::shared_ptr<TcpConnection> &conn, const std::string &data) {
     //TODO
 }
 

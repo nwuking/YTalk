@@ -41,6 +41,7 @@ enum MsgOrder {
     MSG_ORDER_KICK,                                 // 踢人
     MSG_ORDER_HEARTBEAT,                            // 心跳包
     MSG_ORDER_FIND_FRIEND,                          // 查找好友
+    MSG_ORDER_RESPONSE_FRIEND_APPLY,                // 回复好友申请
     MSG_ORDER_ADD_FRIEND,                           // 加好友或者群
     MSG_ORDER_DEL_FRIEND,                           // 删好友
     MSG_ORDER_CHAT,                                 // 单聊
@@ -49,9 +50,11 @@ enum MsgOrder {
     MSG_ORDER_USER_STATUS_CHANGE,                   // 用户在线状态改变
     MSG_ORDER_USER_INFO_UPDATE,                     // 用户信息更新
     MSG_ORDER_CHANGE_PASSWORD,                      // 修改密码
-    MSG_ORDER_TEAM_INFO_UPDATE,                     // 分组信息更新
+    MSG_ORDER_TEAM_INFO_UPDATE,                     // 好友分组信息更新
     MSG_ORDER_MOVE_FRIEND_TO_OTHER_TEAM,            // 将好友移至其它分组
     MSG_ORDER_FRIEND_REMARKS_CHANGE,                // 修改好友备注
+    MSG_ORDER_GET_FRIENDS_LIST,                     // 获取好友列表
+    MSG_ORDER_GET_GROUP_MEMBER,                     // 获取指定的群成员信息
     MSG_ORDER_ERROR                                 // 指令错误
 };
 

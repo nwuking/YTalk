@@ -125,12 +125,19 @@ private:
      */
     void toAddFriend(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data);
     /**
-     * @brief 删除好友
+     * @brief 删除好友或者退群
      * 
      * @param conn 
      * @param data 
      */
     void toDelFriend(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data);
+    /**
+     * @brief 回复好友申请
+     * 
+     * @param conn 
+     * @param data 
+     */
+    void toResponseFriendApply(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data);
     /**
      * @brief 和好友f_id聊天
      * 
@@ -201,7 +208,20 @@ private:
      * @param g_id 
      */
     void toAddGroup(const std::shared_ptr<netlib::TcpConnection> &conn, std::int32_t g_id);
-
+    /**
+     * @brief 获取好友列表
+     * 
+     * @param conn 
+     * @param data 
+     */
+    void toGetFriendsList(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data);
+    /**
+     * @brief 获取指定群成员的信息
+     * 
+     * @param conn 
+     * @param data 
+     */
+    void toGetGroupMember(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data);
 private:
     std::int32_t                        m_sessionId;
     std::int32_t                        m_seq;

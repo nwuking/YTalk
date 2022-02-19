@@ -18,6 +18,8 @@
 
 #define BASE_GROUP_ID 0x0fffffff
 
+const std::string DEFAULT_TEAM = "friends";
+
 namespace YTalk
 {
 
@@ -196,6 +198,164 @@ int UserManager::getFriendRelationship(std::int32_t u_id, std::list<Friend> &u_f
     }
 
     LOG_INFO("u_id=%d has %d friends", u_id, u_friends.size());
+
+    Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
+
+    return 0;
+}
+
+void UserManager::getUsersByNickname(const std::string &u_nickname, std::list<User> &users) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(const auto &user : m_users) {
+        if(user.u_nickname == u_nickname) {
+            users.push_back(user);
+        }
+    }
+}
+
+int UserManager::isFriend(std::int32_t u_id, std::int32_t f_id) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(const auto &user : m_users) {
+        if(user.u_id == u_id) {
+            for(const auto &f : user.u_friends) {
+                if(f.f_id == f_id) {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+    }
+    return 2;
+}
+
+int UserManager::buildFriendRelationship(std::int32_t u_id, std::int32_t f_id) {
+    if(u_id == f_id) {
+        //LOG_WRANING("");
+        return 1;
+    }
+
+    if(u_id > f_id) {
+        // 确保u_id小于f_d
+        std::int32_t temp = u_id;
+        u_id = f_id;
+        f_id = temp;
+    }
+
+    // 同步到数据库
+    std::string sql = "INSERT INTO relationship(u_id1, u_id2, u_id1_team, u_id2_team) "
+                      "VALUES(" + std::to_string(u_id) + ", " + std::to_string(f_id) + ", "
+                               "'" + DEFAULT_TEAM + "', '" + DEFAULT_TEAM + "')";
+    
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    if(!conn->execute(sql)) {
+        LOG_ERROR("error to insert into relationship");
+        return 2;
+    }
+    Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
+
+    // 同步到内存
+    bool op1 = false;
+    bool op2 = false;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto &user : m_users) {
+        if(user.u_id == u_id) {
+            Friend fri = {f_id, "", DEFAULT_TEAM};
+            user.u_friends.emplace_back(fri);
+            op1 = true;
+            continue;
+        }
+        if(user.u_id == f_id) {
+            Friend fri = {u_id, "", DEFAULT_TEAM};
+            user.u_friends.emplace_back(fri);
+            op2 = true;
+        }
+
+        if(op1 && op2) {
+            return 0;
+        }
+    }
+
+    return 3;
+}
+
+int UserManager::getUserByUserId(std::int32_t u_id, User &user) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(const auto &u : m_users) {
+        if(u.u_id == u_id) {
+            user = u;
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int UserManager::releaseFriendRelationship(std::int32_t u_id, std::int32_t f_id) {
+    if(u_id == f_id) {
+        return 1;
+    }
+    if(u_id > f_id) {
+        std::int32_t temp = u_id;
+        u_id = f_id;
+        f_id = temp;
+    }
+
+    std::string sql = "DELETE FROM relationship WHERE u_id1=" + std::to_string(u_id) + " AND u_id2=" + std::to_string(f_id); 
+
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    if(!conn->execute(sql)) {
+        LOG_ERROR("delete from mysql error");
+        return 2;
+    }
+
+    // 解除内存中的联系
+    bool op1 = false;
+    bool op2 = false;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto &user : m_users) {
+        if(user.u_id == u_id) {
+            for(auto it = user.u_friends.begin(); it != user.u_friends.end(); ++it) {
+                if(it->f_id == f_id) {
+                    user.u_friends.erase(it);
+                    op1 = true;
+                    break;
+                }
+            }
+            if(op1) {
+                continue;
+            }
+        }
+
+        if(user.u_id == f_id) {
+            for(auto it = user.u_friends.begin(); it != user.u_friends.end(); ++it) {
+                if(it->f_id == u_id) {
+                    user.u_friends.erase(it);
+                    op2 = true;
+                    break;
+                }
+            }
+        }
+        if(op1 && op2) {
+            return 0;
+        }
+    }
+
+    LOG_ERROR("delete friend memory error");
+    return 3;
+}
+
+int UserManager::saveChatMsg2DB(std::int32_t s_id, std::int32_t a_id, const std::string &data) {
+    std::string sql = "INSERT INTO message(s_id, a_id, content) VALUES(" + std::to_string(s_id) + ", " + std::to_string(a_id) + ", '" + data + "')";
+
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    if(conn == nullptr) {
+        LOG_ERROR("mysql conn is nullptr");
+        return 1;
+    }
+    if(!conn->execute(sql)) {
+        LOG_ERROR("error to execute sql:%s", sql.c_str());
+        Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
+        return 2;
+    }
 
     Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
 

@@ -68,6 +68,39 @@ public:
      * @return int 
      */
     int isFriend(std::int32_t u_id, std::int32_t f_id);
+    /**
+     * @brief u_id和f_id建立好友关系，并同步到数据库
+     * 
+     * @param u_id 
+     * @param f_id 
+     * @return int 
+     */
+    int buildFriendRelationship(std::int32_t u_id, std::int32_t f_id);
+    /**
+     * @brief 通过用户id找到相关用户
+     * 
+     * @param u_id 
+     * @param user 
+     * @return int 
+     */
+    int getUserByUserId(std::int32_t u_id, User &user);
+    /**
+     * @brief 接触好友关系，同步到数据库
+     * 
+     * @param u_id 
+     * @param f_id 
+     * @return int 
+     */
+    int releaseFriendRelationship(std::int32_t u_id, std::int32_t f_id);
+    /**
+     * @brief 将聊天消息保存到数据库中
+     * 
+     * @param s_id 发送者id
+     * @param a_id 接收者id
+     * @param data 
+     * @return int 
+     */
+    int saveChatMsg2DB(std::int32_t s_id, std::int32_t a_id, const std::string &data);
 private:
     int getAllUsers();
     int getFriendRelationship(std::int32_t u_id, std::list<Friend> &u_friends);
