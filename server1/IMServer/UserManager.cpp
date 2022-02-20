@@ -362,6 +362,114 @@ int UserManager::saveChatMsg2DB(std::int32_t s_id, std::int32_t a_id, const std:
     return 0;
 }
 
+int UserManager::createGroup(const std::string &g_name, std::int32_t u_id, std::int32_t &g_id) {
+    g_id = ++m_baseGroupId;
+
+    // 先将消息写到数据库
+    std::string sql = "INSERT INTO user(u_id, u_name, u_password, u_nickname, g_ownerid, u_rg_time) "
+                        "VALUES(" + std::to_string(g_id) + ", " + std::to_string(g_id) + ", "
+                        "'" + g_name + "', ''," + std::to_string(u_id) + ", NOW())";
+
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    if(!conn) {
+        LOG_ERROR("mysqlconn is nullptr");
+        return 1;
+    } 
+    if(!conn->execute(sql)) {
+        LOG_ERROR("insert user error:sql=%s", sql.c_str());
+        return 2;
+    }
+
+    // 同步到内存
+    User user;
+    user.u_id = g_id;
+    user.u_name = std::to_string(g_id);
+    user.u_nickname = g_name;
+    user.g_ownerid = u_id;
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_users.push_back(user);
+    return 0;
+}
+
+int UserManager::updateUser(std::int32_t u_id, const User &u) {
+    // 同步到数据库
+    std::string sql = "UPDATE user SET u_nickname='" + u.u_nickname + "', "
+                      "u_facetype=" + std::to_string(u.u_faceType) + ", "
+                      "u_face='" + u.u_face + "', "
+                      "u_gender='" + u.u_gender + "', "
+                      "u_birthday=" + std::to_string(u.u_birthday) + ", "
+                      "u_signature='" + u.u_signature + "' "
+                      "WHERE u_id=" + std::to_string(u_id) + " ";
+
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    if(conn == nullptr) {
+        LOG_ERROR("update user=%d in db error", u_id);
+        return 1;
+    }
+    if(!conn->execute(sql)) {
+        LOG_ERROR("error to sql:%s", sql.c_str());
+        return 2;
+    }
+
+    // 同步到内存
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        for(auto &user : m_users) {
+            if(user.u_id == u_id) {
+                user.u_nickname = u.u_nickname;
+                user.u_face = u.u_face;
+                user.u_faceType = u.u_faceType;
+                user.u_gender = u.u_gender;
+                user.u_signature = u.u_signature;
+                user.u_birthday = u.u_birthday;
+                return 0;
+            }
+        }
+    }
+
+     LOG_INFO("update user=%d in error", u_id);
+     return 3;
+}
+
+int UserManager::changePassword(std::int32_t u_id, const std::string &pw) {
+    // 先更新数据库
+    std::string sql = "UPDATE user SET u_password='" + pw + "' WHERE u_id=" + std::to_string(u_id) + " ";
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    if(!conn) {
+        LOG_ERROR("mysqlconn is nullptr");
+        return 1;
+    }
+    if(!conn->execute(sql)) {
+        LOG_ERROR("error to execute sql:%s", sql.c_str());
+        return 2;
+    }
+
+    // 同步到内存
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto &user : m_users) {
+        if(user.u_id == u_id) {
+            user.u_password = pw;
+            LOG_INFO("change user=%d password successful", u_id);
+            return 0;
+        }
+    }
+
+    LOG_ERROR("change user=%d password fail", u_id);
+    return 3;
+}
+
+int UserManager::getTeamsByUserId(std::int32_t u_id, std::string &teams) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(const auto &user : m_users) {
+        if(user.u_id == u_id) {
+            teams = user.u_teaminfo;
+            return 0;
+        }
+    }
+    return 1;
+}
+
 }   // namespace IMServer
 
 }    // namespace YTalk

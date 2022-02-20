@@ -101,6 +101,39 @@ public:
      * @return int 
      */
     int saveChatMsg2DB(std::int32_t s_id, std::int32_t a_id, const std::string &data);
+    /**
+     * @brief 建群
+     * 
+     * @param g_name 
+     * @param u_id 
+     * @param g_id 
+     * @return int 
+     */
+    int createGroup(const std::string &g_name, std::int32_t u_id, std::int32_t &g_id);
+    /**
+     * @brief 更新用户大的基本信息
+     * 
+     * @param u_id 
+     * @param u 
+     * @return int 
+     */
+    int updateUser(std::int32_t u_id, const User &u);
+    /**
+     * @brief 修改用户密码
+     * 
+     * @param u_id 
+     * @param pw 
+     * @return int 
+     */
+    int changePassword(std::int32_t u_id, const std::string &pw);
+    /**
+     * @brief 获取用户u_d的分组信息
+     * 
+     * @param u_id 
+     * @param teams 
+     * @return int 
+     */
+    int getTeamsByUserId(std::int32_t u_id, std::string &teams);
 private:
     int getAllUsers();
     int getFriendRelationship(std::int32_t u_id, std::list<Friend> &u_friends);
