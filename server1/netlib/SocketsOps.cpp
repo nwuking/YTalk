@@ -28,9 +28,6 @@ using namespace base;
 namespace netlib
 {
 
-namespace sockets
-{
-
 const struct sockaddr* sockets::sockaddr_cast(const struct sockaddr_in* addr)
 {
     return static_cast<const struct sockaddr*>((const void*)(addr));
@@ -269,7 +266,6 @@ bool sockets::isSelfConnect(SOCKET sockfd)
     return localaddr.sin_port == peeraddr.sin_port && localaddr.sin_addr.s_addr == peeraddr.sin_addr.s_addr;
 }
 
-}   // namespce sockets
     
 }   /// namesapce netlib
 

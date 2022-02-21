@@ -100,7 +100,7 @@ void EventLoop::loop() {
 
 void EventLoop::quit() {
     m_isQuited = true;
-    if(!isInLoopThread) {
+    if(!isInLoopThread()) {
         wakeup();
     }
 }

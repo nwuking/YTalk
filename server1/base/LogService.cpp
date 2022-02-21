@@ -31,7 +31,9 @@ std::mutex LogService::m_mutext;
 std::condition_variable LogService::m_cond;
 FILE* LogService::m_fpPtr = nullptr;
 LOG_LEVEL LogService::m_curLogLevel = LOG_LEVEL_INFO;
+std::list<std::string> LogService::m_logBuffer;
 bool LogService::m_isRunning = false;
+std::int64_t LogService::m_hadWriteen = 0;
 std::string LogService::m_logLevelStr[LOG_LEVEL_NUM] = {    "[TRACE   ]", 
                                                             "[DEBUG   ]", 
                                                             "[INFO    ]", 
@@ -123,8 +125,6 @@ void LogService::output(LOG_LEVEL logLevel, const char *fileName, std::int32_t l
 
         m_toFile = false;
         write(log);
-        stop();
-
         crash();      // 主动让程序退出
     }
 }
@@ -250,8 +250,9 @@ bool LogService::write(const std::string &log) {
 }
 
 void LogService::crash() {
+    printf("crsah\n");
     char *p = nullptr;
-    p = 0;
+    *p = 0;
 }
 
 void LogService::createLogFile(const std::string &newLogFile) {

@@ -75,7 +75,7 @@ private:
     std::string                             m_pw;
     std::string                             m_dbName;           // 数据库名
     int                                     m_maxConnCount;     
-    int                               m_initConnCount;
+    int                                     m_initConnCount;
     std::mutex                              m_mutex;
     std::condition_variable                 m_cond;
 

@@ -37,7 +37,7 @@ ChatService::~ChatService() {
 int ChatService::init(EventLoop *loop, const std::string &ip, std::uint16_t port) {
     InetAddress listeAddr(ip, port);
     m_server.reset(new TcpServer(loop, listeAddr, "YTalk_chat", TcpServer::kReusePort));
-    m_server->setConnectionCallBack(std::bind(ChatService::onConnected, this, std::placeholders::_1));
+    m_server->setConnectionCallBack(std::bind(&ChatService::onConnected, this, std::placeholders::_1));
     m_server->start(4); 
     return 0;
 }

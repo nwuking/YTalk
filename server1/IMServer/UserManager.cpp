@@ -15,6 +15,7 @@
 #include "../mysql/MysqlManager.h"      
 
 #include <memory>
+#include <sstream>
 
 #define BASE_GROUP_ID 0x0fffffff
 
@@ -109,8 +110,8 @@ int UserManager::getAllUsers() {
         return 1;
     }
 
-    std::string sql = "SELECT u_id, u_name, u_password, u_nickname, u_gender, "
-                      "u_signature, u_birthday, u_teaminfo FROM user ORDER BY u_id DESC";
+    std::string sql = "SELECT u_id, u_name, u_password, u_nickname, u_gender, u_birthday, "
+                      "u_signature, u_facetype, u_face, u_teaminfo FROM user ORDER BY u_id DESC";
     MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
     if(conn == nullptr) {
         LOG_ERROR("Fail to get MysqlConn");
@@ -118,7 +119,8 @@ int UserManager::getAllUsers() {
     }
     MResultSet *set = conn->query(sql);
     if(set == nullptr) {
-        LOG_INFO("No result return in mysql");
+        LOG_INFO("execute sql=%s error", sql.c_str());
+        Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
         return 3;
     }
 
@@ -129,8 +131,10 @@ int UserManager::getAllUsers() {
         user.u_password = set->getString("u_password");
         user.u_nickname = set->getString("u_nickname");
         user.u_gender = set->getString("u_gender");
-        user.u_signature = set->getString("u_signature");
         user.u_birthday = set->getInt("u_bithday");
+        user.u_signature = set->getString("u_signature");
+        user.u_faceType = set->getInt("u_facetype");
+        user.u_face = set->getString("u_face");
         user.u_teaminfo = set->getString("u_teaminfo");
 
         m_users.push_back(user);
@@ -145,7 +149,7 @@ int UserManager::getAllUsers() {
         }
     }
 
-    LOG_INFO("UserManager{m_baseUserId:%d, m_baseGroupId:%d, users:%d}", m_baseUserId, m_baseGroupId, m_users.size());
+    LOG_INFO("UserManager{m_baseUserId:%d, m_baseGroupId:%d, users:%d}", m_baseUserId.load(), m_baseGroupId.load(), m_users.size());
 
     Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
 
@@ -170,6 +174,7 @@ int UserManager::getFriendRelationship(std::int32_t u_id, std::list<Friend> &u_f
     MResultSet *set = conn->query(sql);
     if(set == nullptr) {
         LOG_INFO("No result return in mysql");
+        Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
         return 3;
     }
 
@@ -283,6 +288,17 @@ int UserManager::getUserByUserId(std::int32_t u_id, User &user) {
     for(const auto &u : m_users) {
         if(u.u_id == u_id) {
             user = u;
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int UserManager::getUserByUserId(std::int32_t u_id, User* &user) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for(auto &u : m_users) {
+        if(u.u_id == u_id) {
+            user = &u;
             return 0;
         }
     }
@@ -468,6 +484,98 @@ int UserManager::getTeamsByUserId(std::int32_t u_id, std::string &teams) {
         }
     }
     return 1;
+}
+
+int UserManager::moveFriend2OtherTeam(std::int32_t u_id, std::int32_t f_id, const std::string &newteam) {
+    std::ostringstream sql;
+    if (u_id < f_id)
+    {
+        sql << "UPDATE relationship SET u_id1_team='"
+              << newteam << "' WHERE u_id1="
+              << u_id << " AND u_id2=" << f_id;
+    }
+    else
+    {
+        sql << "UPDATE relationship SET u_id2_team='"
+              << newteam << "' WHERE u_id1="
+              << f_id << " AND u_id2=" << u_id;
+    }
+
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+
+    if (!conn->execute(sql.str().c_str()))
+    {
+        return 1;
+    }
+
+    LOG_INFO("MoveFriendToOtherTeam db operation successfully, userid: %d, friendid: %d, sql: %s" , u_id, f_id, sql.str().c_str());
+
+    //改变内存中用户的分组信息
+    User* u = NULL;
+    if (getUserByUserId(u_id, u) || u == NULL)
+    {
+        return 2;
+    }
+
+    for (auto& f : u->u_friends)
+    {
+        if (f.f_id == f_id)
+        {
+            f.f_team = newteam;
+            return 0;
+        }
+    }
+
+    return 3;
+}
+
+int UserManager::changeFriendRemarks(std::int32_t u_id, std::int32_t f_id, const std::string &newremarks) {
+    std::ostringstream sql;
+    if (u_id < f_id)
+    {
+        sql << "UPDATE relationship SET u_id1_remarks='"
+            << newremarks << "' WHERE u_id1="
+            << u_id << " AND u_id2=" << f_id;
+    }
+    else
+    {
+        sql << "UPDATE relationship SET u_id2_remarks='"
+            << newremarks << "' WHERE u_id2="
+            << u_id << " AND u_id1=" << f_id;
+    }
+
+    MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    
+    if (!conn->execute(sql.str().c_str()))
+    {
+        LOG_ERROR("Update Markname error, sql: %s", sql.str().c_str());
+        Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
+        return 1;
+    }
+    Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
+
+    LOG_INFO("update markname successfully, userid: %d, friendid: %d, sql: %s", u_id, f_id, sql.str().c_str());
+
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for (auto& user : m_users)
+    {
+        if (user.u_id == u_id)
+        {
+            for (auto& f : user.u_friends)
+            {
+                if (f.f_id == f_id)
+                {
+                    f.f_remarks = newremarks;
+                    return 0;
+                }
+            }          
+        }
+    }
+
+    LOG_ERROR("Failed to update markname, find no exsit user in memory error, m_allCachedUsers.size(): %d, userid: %d, friendid: %d, sql: %s",
+         m_users.size(), u_id, f_id, sql.str().c_str());
+
+    return 2;
 }
 
 }   // namespace IMServer

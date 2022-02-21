@@ -85,7 +85,6 @@ MysqlConn::~MysqlConn() {
 int MysqlConn::init() {
     m_mysql = mysql_init(nullptr);
     if(!m_mysql) {
-        //LOG(INFO) << "mysql_init failed";
         return 1;
     }
 
@@ -99,8 +98,6 @@ int MysqlConn::init() {
                                     m_manager->getPort(), 
                                     nullptr, 0))
     {
-        //LOG(INFO) << "mysql_real_connect failed: " << mysql_error(_mysql);
-        //LOG(INFO) << "port: " << _mySqlPool->getDBPort();
         return 2;
     }
     return 0;

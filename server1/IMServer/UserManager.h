@@ -84,6 +84,7 @@ public:
      * @return int 
      */
     int getUserByUserId(std::int32_t u_id, User &user);
+    int getUserByUserId(std::int32_t u_id, User* &user);
     /**
      * @brief 接触好友关系，同步到数据库
      * 
@@ -134,6 +135,24 @@ public:
      * @return int 
      */
     int getTeamsByUserId(std::int32_t u_id, std::string &teams);
+    /**
+     * @brief 将好友移至其它分组
+     * 
+     * @param u_id 
+     * @param f_id 
+     * @param newteam 
+     * @return int 
+     */
+    int moveFriend2OtherTeam(std::int32_t u_id, std::int32_t f_id, const std::string &newteam);
+    /**
+     * @brief 修改好友的备注
+     * 
+     * @param u_id 
+     * @param f_id 
+     * @param newremarks 
+     * @return int 
+     */
+    int changeFriendRemarks(std::int32_t u_id, std::int32_t f_id, const std::string &newremarks);
 private:
     int getAllUsers();
     int getFriendRelationship(std::int32_t u_id, std::list<Friend> &u_friends);

@@ -1247,13 +1247,23 @@ void ChatSession::toChangeTeamInfo(const std::shared_ptr<netlib::TcpConnection> 
 
     // teams是一个json对象
     rapidjson::Document doc;
-    if(doc.Parse(teams.c_str()).HasParseError()) {
+    if(doc.Parse(teams.c_str()).HasParseError() || !doc.IsArray()) {
         LOG_ERROR("Get teaminfo from user error, please check it");
         return;
     }
 
     if(operation == 0) {
         // 增加分组
+        std::int32_t teamNumbers = doc.Size();
+        for(int i = 0; i < teamNumbers; ++i) {
+            // 查看分组是否已经存在
+            if(!doc[i]["u_teaminfo"].IsNull() && doc[i]["u_teaminfo"].GetString() == newteam) {
+                LOG_INFO("team is exits");
+                return;
+            }
+        }
+
+        //TODO
     }
     else if(operation == 1) {
         // 删除分组
@@ -1269,11 +1279,140 @@ void ChatSession::toChangeTeamInfo(const std::shared_ptr<netlib::TcpConnection> 
 }
 
 void ChatSession::toMoveFriend2OtherTeam(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data) {
+/**
+ * @brief 将好友移至其它分组
+ *      {"f_id": 123, "oldteam": "dd", "newteam":"qww"}
+ */
+    rapidjson::Document d;
+    if(d.Parse(data.c_str()).HasParseError()) {
+        // 数据错误
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    // 检查数据
+    if(!d.HasMember("oldteam") || !d["oldteam"].IsString()) {
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    if(!d.HasMember("newteam") || !d["newteam"].IsString()) {
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    if(!d.HasMember("f_id") || !d["f_id"].IsInt()) {
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+
+    std::int32_t f_id = d["f_id"].GetInt();
+    std::string oldteam = d["oldteam"].GetString();
+    std::string newteam = d["newteam"].GetString();
+
+    if(oldteam == newteam) {
+        return;
+    }
+
+    // 判断f_id是否是你的好友
+    if(Singleton<UserManager>::getInstance().isFriend(m_onlineUserInfo.u_id, f_id)) {
+        LOG_ERROR("f_id=%d isn't user=%d friend", f_id, m_onlineUserInfo.u_id);
+        return;
+    }
+
+    User user;
+    if(Singleton<UserManager>::getInstance().getUserByUserId(m_onlineUserInfo.u_id, user)) {
+        LOG_ERROR("user=%d isn't in memory", m_onlineUserInfo.u_id);
+        return;
+    }
+
+    std::string teams = user.u_teaminfo;
+    if(teams.empty()) {
+        teams = "[{\"u_teaminfo\": \"";
+        teams += DEFAULT_TEAM;
+        teams += "\", \"members\":[]}]";
+    }
+
+    // teams是一个json对象
+    rapidjson::Document doc;
+    if(doc.Parse(teams.c_str()).HasParseError() || !doc.IsArray()) {
+        LOG_ERROR("Get teaminfo from user error, please check it");
+        return;
+    }
+
+    bool op1 = false;
+    bool op2 = false;
+    std::int32_t teamNumbers = doc.Size();
+    for(int i = 0; i < teamNumbers; ++i) {
+        if(doc[i]["u_teaminfo"].IsString()) {
+            std::string t = doc[i]["u_teaminfo"].GetString();
+            if(t == newteam) {
+                op1 = true;
+                continue;
+            }
+            if(t == oldteam) {
+                op2 = true;
+            }
+            if(op1 && op2) {
+                break;
+            }
+        }
+    }
+
+    if(!op1 || !op2) {
+        return;
+    }
+    if(Singleton<UserManager>::getInstance().moveFriend2OtherTeam(m_onlineUserInfo.u_id, f_id, newteam)) {
+        LOG_ERROR("move f_id=%d to newteam=%s error in user=%d", f_id, newteam.c_str(), m_onlineUserInfo.u_id);
+        return;
+    }
+
     //TODO
 }
 
 void ChatSession::toChangeFriendRemarks(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data) {
-    //TODO
+/**
+ * @brief 修改好友备注
+ *      {"f_id": 12, "newremarks":"ww"}
+ */
+     rapidjson::Document d;
+    if(d.Parse(data.c_str()).HasParseError()) {
+        // 数据错误
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    // 检查数据
+    if(!d.HasMember("newremarks") || !d["newremarks"].IsString()) {
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+    if(!d.HasMember("f_id") || !d["f_id"].IsInt()) {
+        LOG_ERROR("error data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+
+    std::int32_t f_id = d["f_id"].GetInt();
+    std::string newremarks = d["newremarks"].GetString();
+
+    if (Singleton<UserManager>::getInstance().changeFriendRemarks(m_onlineUserInfo.u_id, f_id, newremarks)){
+        //TODO: 失败应答客户端
+        LOG_ERROR("Update markname failed, userid: %d, friendid: %d, client: %s", m_onlineUserInfo.u_id, f_id, conn->peerAddress().toIpPort().c_str());
+        return;
+    }
+
+    std::string response;
+    response = "{"
+                    "\"code\": 0, " 
+                    "\"msg\": \"ok\" "
+                "}";
+   
+    DataHead dh;
+    bzero(&dh, sizeof(DataHead));
+    dh.dh_msgOrder = MSG_ORDER_FRIEND_REMARKS_CHANGE;
+    std::string msg(reinterpret_cast<char*>(&dh), sizeof(dh));
+
+    response = msg + response;
+
+    send(response);
+
+    LOG_INFO("Response to client, userid: %d, MSGoRDER=FRIEND_REMARKS_CHANGE, data: %s", m_onlineUserInfo.u_id, response.c_str());
 }
 
 void ChatSession::toGetFriendsList(const std::shared_ptr<TcpConnection> &conn, const std::string &data) {

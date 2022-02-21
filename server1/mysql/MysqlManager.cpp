@@ -53,6 +53,13 @@ int MysqlManager::init( const std::string &host,
     if(m_flag) {
         return 0;
     }
+
+    m_host = host;
+    m_port = port;
+    m_user = user;
+    m_pw = pw;
+    m_dbName = dbName;
+
     for(int i = 0; i < m_initConnCount; ++i) {
         MysqlConn *conn = new MysqlConn(this);
         if(conn->init()) {

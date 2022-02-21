@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     signal(SIGTERM, sig_exit);
 
 // 读取相关配置
-    base::ConfigParse Config("../etc/IMServer.conf");
+    base::ConfigParse Config("etc/IMServer.conf");
 
 /// 初始化LogService
     std::string logDir = Config.getConfigValue(CONFIG_LOG_DIR);
@@ -99,12 +99,7 @@ int main(int argc, char *argv[])
     std::string dbUser = Config.getConfigValue(CONFIG_DB_USER);
     std::string dbPW = Config.getConfigValue(CONFIG_DB_PW);
     std::string dbName = Config.getConfigValue(CONFIG_DB_NAME);
-    if(Singleton<mysql::MysqlManager>::getInstance().init(dbHost, 
-                                                                dbPort, 
-                                                                dbUser, 
-                                                                dbPW, 
-                                                                dbName) ) 
-    {
+    if(Singleton<mysql::MysqlManager>::getInstance().init(dbHost, dbPort, dbUser, dbPW, dbName)) {
         LOG_FATAL("Fail to init mysql");                                                     
     }
 
@@ -117,6 +112,9 @@ int main(int argc, char *argv[])
     std::string clientListenIP = Config.getConfigValue(CONFIG_CLIENT_LISTEN_IP);
     std::string clientListenPortStr = Config.getConfigValue(CONFIG_CLIENT_LISTEN_PORT);
     std::uint16_t clientListenPort = static_cast<std::uint16_t>(std::stoi(clientListenPortStr));
+    Singleton<IMServer::ChatService>::getInstance().init(&g_loop, clientListenIP, clientListenPort);
+
+    g_loop.loop();
 
     return 0;
 }

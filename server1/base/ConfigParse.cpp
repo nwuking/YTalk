@@ -24,33 +24,34 @@ ConfigParse::ConfigParse(const std::string &fileName) {
     m_fileName = fileName;
 
     FILE *fp = fopen(m_fileName.c_str(), "r");
-    if(fp == nullptr) {
+    if(!fp) {
         return;
     }
 
     char buf[256];
-    while(1) {
+    for(;;) {
         char *p = fgets(buf, 256, fp);
-        if(p == nullptr) {
+        if(!p) {
             break;
         }
 
         // 去掉'\n'
         std::size_t len = strlen(buf);
         if(buf[len - 1] == '\n') {
-            buf[len - 1] = '\0';
+            buf[len - 1] = 0;
         }
 
         // 去掉注释
         char *ch = strchr(buf, '#');
         if(ch) {
-            *ch = '\0';
+            *ch = 0;
         }
         if(strlen(buf) != 0) {
             // 解析每一行
             parse(buf);
         }
     }
+    fclose(fp);
 }
 
 ConfigParse::~ConfigParse() {
@@ -63,7 +64,7 @@ void ConfigParse::parse(char *buf) {
         return;
     }
 
-    *ch = '\0';
+    *ch = 0;
 
     std::string key, value;
     removeSpace(key, buf);
@@ -71,6 +72,7 @@ void ConfigParse::parse(char *buf) {
 
     if(!key.empty() && !value.empty()) {
         m_configMap.insert(std::make_pair(key, value));
+        printf("key=%s,value=%s", key.c_str(), value.c_str());
     }
 }
 
@@ -79,17 +81,20 @@ void ConfigParse::removeSpace(std::string &str, char *buf) {
     while((*start == ' ') || (*start == '\t') || (*start == '\r')) {
         ++start;
     }
-    if(*start == '\0') {
-        return;
-    }
+   if(strlen(start) == 0) {
+       return;
+   }
 
     char *end = buf + strlen(buf) - 1;
-    while ((*end == ' ') || (*end == '\t') || (*end == '\t')) {
+    while ((*end == ' ') || (*end == '\t') || (*end == '\r')) {
+        *end = 0;
         --end;
     }
 
     int len = end - start + 1;
-    str.append(start, len);
+    if(len < 0)
+        return;
+    str = start;
 }
 
 std::string ConfigParse::getConfigValue(const std::string &key) {
