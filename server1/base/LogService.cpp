@@ -56,7 +56,7 @@ bool LogService::init(const char *logFileName/*= nullptr*/, bool toFile/*= true*
     else if(m_logFileName.empty()) {
         m_toFile = false;
     }
-
+m_toFile = false;
     m_threadPtr.reset(new std::thread(threadProc));
 
     return true;

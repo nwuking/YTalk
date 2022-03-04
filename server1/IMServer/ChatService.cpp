@@ -48,11 +48,14 @@ void ChatService::stop() {
 
 void ChatService::onConnected(std::shared_ptr<TcpConnection> conn) {
     if(conn->connected()) {
+        fprintf(stderr, "1");
         std::lock_guard<std::mutex> lock(m_sessionMutex);
         ++m_sessionId;
         std::shared_ptr<ChatSession> newSession(new ChatSession(conn, m_sessionId));
         conn->setMessageCallBack(std::bind(&ChatSession::onRead, newSession.get(), _1, _2, _3));
         m_sessions.push_back(newSession);
+
+        printf("1");
     }
     else {
         // 断开
@@ -89,7 +92,7 @@ void ChatService::onDisconnected(const std::shared_ptr<TcpConnection> &conn) {
             }
 
             m_sessions.erase(it);
-            LOG_INFO("Client:%s disconnected", conn->peerAddress().toIpPort());
+            LOG_INFO("Client:%s disconnected", conn->peerAddress().toIpPort().c_str());
             break;
         }
     }

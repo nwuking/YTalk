@@ -25,9 +25,10 @@ namespace IMServer
  * 
  */
 typedef struct PackageHead {
-    char        ph_compress;            // "1"为压缩，"0"为不压缩
-    int         ph_compress_size;       // 如果压缩了则为压缩后的大小，否则为0
-    int         ph_src_size;            // 压缩前的大小
+    char            ph_compress;            // "1"为压缩，"0"为不压缩
+    int32_t         ph_src_size;            // 压缩前的大小
+    int32_t         ph_compress_size;       // 如果压缩了则为压缩后的大小，否则为0
+    char            reserved[16];           // 保留字段
 } PackageHead;
 
 /**
@@ -61,7 +62,7 @@ enum MsgOrder {
 typedef struct DataHead {
     std::int32_t            dh_msgOrder;                    // 消息指令
     std::int32_t            dh_seq;
-    char                    dh_reserve[16];                 // 预留空间，
+    char                    dh_reserve[32];                 // 预留空间，
 } DataHead;
 
 }   // IMServer

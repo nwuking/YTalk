@@ -90,7 +90,6 @@ void ChatSession::onRead(const std::shared_ptr<netlib::TcpConnection> &conn, Buf
             inBuf.append(buffer->peek(), head.ph_src_size);
             buffer->retrieve(head.ph_src_size);
         }
-
         // 处理受到的数据(inBuf)
         if(handleData(conn, inBuf)) {
             // 客户端发送错误的消息，服务端强制关闭
@@ -147,8 +146,8 @@ int ChatSession::handleData(const std::shared_ptr<netlib::TcpConnection> &conn, 
     bzero(&dh, sizeof(DataHead));
     const char *buf = inBuf.data();
     memcpy(&dh, buf, sizeof(DataHead));
-    std::int16_t check;
-    memcpy(&check, dh.dh_reserve, 16);
+    std::int32_t check;
+    memcpy(&check, dh.dh_reserve, 32);
     if(check != 0) {
         // 非法的数据，不处理
         LOG_ERROR("Illegal data from client:%s", conn->peerAddress().toIpPort().c_str());
@@ -319,7 +318,7 @@ void ChatSession::toRegister(const std::shared_ptr<netlib::TcpConnection> &conn,
     // 插入DataHead,构造完整的data
     DataHead dh;
     bzero(&dh, sizeof(DataHead));
-    dh.dh_msgOrder = MSG_ORDER_REGISTER;
+    dh.dh_msgOrder =  MSG_ORDER_REGISTER;
     dh.dh_seq = m_seq;
     rspMsg.append(reinterpret_cast<char*>(&dh), sizeof(DataHead));
     rspMsg += response;

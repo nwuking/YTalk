@@ -1,32 +1,28 @@
-# Prerequisites
-*.d
+#ignore 所有没有扩展名的文件
+#如果想git add 没有扩展名的文件，add -f
+*
+!makefile
+!*.*
+!*/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/
+output/
+install_manifest.txt
+test/*.sh
+logs/
+demos/
 
-# Precompiled Headers
-*.gch
-*.pch
+*.pb.h
+*.pb.cc
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+*.o      
+*.a      
+*.so        
 
-# Fortran module files
-*.mod
-*.smod
+#保留目录thirdparty下的所有文件
+/thirdparty/**/*
+!/thirdparty/*.gz
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
 
-# Executables
-*.exe
-*.out
-*.app

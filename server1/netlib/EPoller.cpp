@@ -56,15 +56,16 @@ TimeStamp EPoller::poll(CHANNEL_ARR *activeChannels, int timeout) {
         if(static_cast<std::size_t>(numEvents) == m_events.size()) {
             m_events.resize(m_events.size()*2);
         }
-        else if(numEvents == 0) {
-            LOG_TRACE("nothing happend");
-        }
-        else {
-            if(errno != EINTR) {
-                // 不是发生终端
-                errno = savedErrno;
-                LOG_SYSERROR("EPoller::poll() error");
-            }
+       
+    }
+    else if(numEvents == 0) {
+        LOG_TRACE("nothing happend");        
+    }
+    else {
+        if(errno != EINTR) {
+            // 不是发生终端
+            errno = savedErrno;
+            LOG_SYSERROR("EPoller::poll() error");
         }
     }
     return now;
