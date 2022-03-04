@@ -43,6 +43,7 @@ UserManager::~UserManager() {
 
 int UserManager::init() {
     // 从数据库中加载所有的用户(群)信息
+    
     if(getAllUsers()) {
         return 1;
     }
@@ -87,20 +88,26 @@ int UserManager::registerForUser(const User &newUser) {
                               "'" + user.u_password + "', "
                               "'" + user.u_nickname + "', "
                               "NOW())";
+char sql1[256] = { 0 };
+    snprintf(sql1, 256, "INSERT INTO t_user(u_id, u_name, u_password, u_nickname, u_rg_time) VALUES(%d, '%s', '%s', '%s', NOW())", m_baseUserId.load(), user.u_name.c_str(), user.u_password.c_str(), user.u_nickname.c_str());
     MysqlConn *conn = Singleton<MysqlManager>::getInstance().getMysqlConn();
+    LOG_INFO("mmmtt");
     if(!conn || !conn->execute(sql)) {
         LOG_ERROR("Error to insert user");
         return 1;
     }
+    LOG_INFO("mmm0");
     Singleton<MysqlManager>::getInstance().putMysqlConn(conn);
-
+LOG_INFO("mmm");
     // 设置一些字段
     user.u_id = u_id;
     user.u_gender = "1";
     user.g_ownerid = 0;
+    user.u_faceType = 0;
+    user.u_birthday = 20220101;
 
    std::lock_guard<std::mutex> lock(m_mutex);
-   m_users.push_back(user);
+    m_users.push_back(user);
    return 0;
 }
 

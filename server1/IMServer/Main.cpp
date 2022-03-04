@@ -109,11 +109,12 @@ int main(int argc, char *argv[])
     }
 
 /// 初始化聊天服务模块
+
     std::string clientListenIP = Config.getConfigValue(CONFIG_CLIENT_LISTEN_IP);
     std::string clientListenPortStr = Config.getConfigValue(CONFIG_CLIENT_LISTEN_PORT);
     std::uint16_t clientListenPort = static_cast<std::uint16_t>(std::stoi(clientListenPortStr));
     Singleton<IMServer::ChatService>::getInstance().init(&g_loop, clientListenIP, clientListenPort);
-fprintf(stderr, "1");
+
     g_loop.loop();
 
     return 0;

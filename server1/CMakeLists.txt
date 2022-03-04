@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project (YTalk)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -Wall -O0 -Wno-unused-variable -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -g -Wall -O0 -Wno-unused-variable -pthread")
 
 link_directories(
     ${PROJECT_SOURCE_DIR}/lib
@@ -10,7 +10,6 @@ link_directories(
 )
 
 find_library(MYSQL_LIB libmysqlclient.so /usr/lib/x86_64-linux-gnu/)
-#如果你的数据库是mariadb，你还需要安装mariadb-devel库；如果你的数据库是mysql，你需要安装mysql-devel，否则会出现如下错误提示。
 IF (NOT MYSQL_LIB)
     MESSAGE(FATAL_ERROR "mysqlclient not found. If your mysql is mariadb, please install mariadb-devel otherwise install mysql-devel.")
 ENDIF(NOT MYSQL_LIB)
@@ -20,6 +19,7 @@ base/ConfigParse.cpp
 base/LogService.cpp 
 base/ThreadUtils.cpp 
 base/TimeStamp.cpp 
+base/BinaryStream.cpp 
 
 netlib/Acceptor.cpp 
 netlib/Buffer.cpp 

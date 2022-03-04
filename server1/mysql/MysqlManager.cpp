@@ -15,8 +15,8 @@
 #include <memory>
 
 
-#define MAX_CONN_COUNT 16
-#define INIT_CONN_COUNT 8
+#define MAX_CONN_COUNT 4
+#define INIT_CONN_COUNT 2
 
 namespace YTalk
 {

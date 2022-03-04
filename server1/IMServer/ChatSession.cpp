@@ -17,6 +17,7 @@
 #include "ChatService.h"
 #include "UserManager.h"
 #include "CacheManager.h"
+#include "../base/BinaryStream.h"
 
 #include "rapidjson/document.h"      // 第三方库
 #include "rapidjson/prettywriter.h"  // 第三方库
@@ -64,14 +65,18 @@ void ChatSession::onRead(const std::shared_ptr<netlib::TcpConnection> &conn, Buf
         // 读取PackageHead
         PackageHead head;
         memcpy(&head, buffer->peek(), sizeof(PackageHead));
+    
+        
         std::string inBuf;
+
+        LOG_INFO("TEST %d, %d", head.ph_compress_size, head.ph_src_size);
 
         if(head.ph_compress_size < 0 || head.ph_compress_size > MAX_PACKAGE_SIZE || head.ph_src_size < 0 || head.ph_src_size > MAX_PACKAGE_SIZE) {
             //包头错误， 服务端主动关闭连接
             conn->forceClose();
             return;
         }
-        if(buffer->readableBytes() < static_cast<size_t>(head.ph_compress_size) + sizeof(PackageHead)) {
+        if(buffer->readableBytes() < static_cast<size_t>(head.ph_src_size) + sizeof(PackageHead)) {
             // 不是一个完整的包，不做处理
             return;
         }
@@ -87,6 +92,7 @@ void ChatSession::onRead(const std::shared_ptr<netlib::TcpConnection> &conn, Buf
         }
         else {
             // 数据没被压缩
+            
             inBuf.append(buffer->peek(), head.ph_src_size);
             buffer->retrieve(head.ph_src_size);
         }
@@ -142,27 +148,30 @@ void ChatSession::sendWhenFriendStatusChange(std::int32_t f_id, int type, int st
 }
 
 int ChatSession::handleData(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &inBuf) {
+    BinaryStreamReader reader(inBuf.data(), inBuf.size());
     DataHead dh;
     bzero(&dh, sizeof(DataHead));
-    const char *buf = inBuf.data();
-    memcpy(&dh, buf, sizeof(DataHead));
-    std::int32_t check;
-    memcpy(&check, dh.dh_reserve, 32);
-    if(check != 0) {
-        // 非法的数据，不处理
-        LOG_ERROR("Illegal data from client:%s", conn->peerAddress().toIpPort().c_str());
+    if(!reader.ReadInt32(dh.dh_msgOrder)) {
+        LOG_ERROR("Fail to read MSG_ORDER from client:%s", conn->peerAddress().toIpPort().c_str());
         return 1;
     }
+    if(!reader.ReadInt32(dh.dh_seq)) {
+        LOG_ERROR("Fail to read SEQ from client:%s", conn->peerAddress().toIpPort().c_str());
+        return 1;
+    }
+    
     if(dh.dh_msgOrder <= MSG_ORDER_UNKNOW || dh.dh_msgOrder >= MSG_ORDER_ERROR) {
         // 指令错误
         LOG_INFO("Msg order error from client:%s", conn->peerAddress().toIpPort().c_str());
         return 2;
     }
     m_seq = dh.dh_seq;
-    buf += sizeof(DataHead);
-
     std::string data;
-    data.append(buf, inBuf.size()-sizeof(DataHead));
+    size_t dataLen;
+    if(!reader.ReadString(&data, 0, dataLen)) {
+        LOG_ERROR("Fail to read data from client:%s", conn->peerAddress().toIpPort().c_str());
+        return 2;
+    }
 
     switch(dh.dh_msgOrder) {
         case MSG_ORDER_REGISTER:
@@ -288,7 +297,8 @@ void ChatSession::toRegister(const std::shared_ptr<netlib::TcpConnection> &conn,
 
     // 查找u_name是否有用户已经注册了
     User user;
-    bzero(&user, sizeof(User));
+    user.u_id = 0;
+    //bzero(&user, sizeof(User));
     Singleton<UserManager>::getInstance().getUserByUserName(newUser.u_name, user);
     if(user.u_id != 0) {
         // 该账号已经注册了
@@ -313,17 +323,18 @@ void ChatSession::toRegister(const std::shared_ptr<netlib::TcpConnection> &conn,
                         "}";
         }
     }
-
+LOG_INFO("qwe");
     std::string rspMsg;
     // 插入DataHead,构造完整的data
-    DataHead dh;
-    bzero(&dh, sizeof(DataHead));
-    dh.dh_msgOrder =  MSG_ORDER_REGISTER;
-    dh.dh_seq = m_seq;
-    rspMsg.append(reinterpret_cast<char*>(&dh), sizeof(DataHead));
+    BinaryStreamWriter writer(&rspMsg);
+    writer.WriteInt32(MSG_ORDER_REGISTER);
+    writer.WriteInt32(m_seq);
+    writer.Flush();
+    
     rspMsg += response;
-
+LOG_INFO("qwe1");
     send(rspMsg);
+    LOG_INFO("qwe2");
     LOG_INFO("Response 2 client:%s, MsgOrder: register, data:%s", conn->peerAddress().toIpPort().c_str(), response.c_str());
 }
 

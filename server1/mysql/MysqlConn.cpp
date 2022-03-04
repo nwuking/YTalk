@@ -11,12 +11,13 @@
 
 #include "MysqlConn.h"
 #include "MysqlManager.h"
+#include "../base/Logger.h"
 
 #include <cstring>
 
 namespace YTalk
 {
-
+using namespace base;
 namespace mysql
 {
 
@@ -62,8 +63,8 @@ int MResultSet::getInt(const std::string &key) {
 
 std::string MResultSet::getString(const std::string &key) {
     int index = getIndex(key);
-    if(index == -1) {
-        return nullptr;
+    if(index == -1 || m_row[index] == nullptr) {
+        return std::string();
     }
     return m_row[index];
 }
@@ -125,7 +126,7 @@ MResultSet* MysqlConn::query(const std::string &sql) {
 bool MysqlConn::execute(const std::string &sql) {
     mysql_ping(m_mysql);
 
-    if(mysql_real_query(m_mysql, sql.c_str(), sql.size())) {
+    if(mysql_real_query(m_mysql, sql.c_str(), sql.size()) != 0) {
         //LOG(INFO) << "mysql_real_query failed: " << mysql_error(_mysql) << ", sql: " << update;
         return false;
     }
@@ -133,6 +134,7 @@ bool MysqlConn::execute(const std::string &sql) {
     if(mysql_affected_rows(m_mysql) > 0) {
         return true;
     }
+
     return false;
 }
 

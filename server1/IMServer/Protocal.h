@@ -24,12 +24,14 @@ namespace IMServer
  * @brief 数据包的头部
  * 
  */
+#pragma pack(push, 1)
 typedef struct PackageHead {
     char            ph_compress;            // "1"为压缩，"0"为不压缩
-    int32_t         ph_src_size;            // 压缩前的大小
-    int32_t         ph_compress_size;       // 如果压缩了则为压缩后的大小，否则为0
+    std::int32_t         ph_src_size;            // 压缩前的大小
+    std::int32_t        ph_compress_size;       // 如果压缩了则为压缩后的大小，否则为0
     char            reserved[16];           // 保留字段
 } PackageHead;
+#pragma pack(pop)
 
 /**
  * @brief 消息指令
