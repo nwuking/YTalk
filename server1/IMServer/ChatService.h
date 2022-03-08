@@ -61,6 +61,13 @@ public:
      * @param sessions 
      */
     void getSessionsByUserId(std::int32_t u_id, std::list<std::shared_ptr<ChatSession>> &sessions);
+    /**
+     * @brief 通过用户id，获取用户的在线状态
+     * 
+     * @param u_id 
+     * @return std::int32_t 
+     */
+    std::int32_t getStatusByUserId(std::int32_t u_id);
 private:
     /**
      * @brief 新连接到来或者断开连接的时候调用

@@ -88,7 +88,7 @@ void ChatService::onDisconnected(const std::shared_ptr<TcpConnection> &conn) {
                 }
             }
             else {
-                LOG_INFO("ChatSession is invaild, u_id=%d", (*it)->getUserId());
+                LOG_INFO("ChatSession is invaild");
             }
 
             m_sessions.erase(it);
@@ -127,6 +127,17 @@ void ChatService::getSessionsByUserId(std::int32_t u_id, std::list<std::shared_p
             sessions.push_back(session);
         }
     }
+}
+
+std::int32_t ChatService::getStatusByUserId(std::int32_t u_id) {
+    std::lock_guard<std::mutex> lock(m_sessionMutex);
+    for(const auto &session : m_sessions) {
+        if(session->getUserId() == u_id && session->vaild()) {
+            // 对方可能多端在线，返回期中一个
+            return session->getStatus();
+        }
+    }
+    return 0;     // 
 }
     
 }   // namespace IMServer

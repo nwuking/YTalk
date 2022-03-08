@@ -76,8 +76,20 @@ public:
     std::int32_t getSeq() {
         return m_seq;
     }
+    /**
+     * @brief 将session设为无效状态
+     * 
+     */
     void setInvaild() {
         m_onlineUserInfo.u_id = 0;
+    }
+    /**
+     * @brief 获取session的在线状态
+     * 
+     * @return std::int32_t 
+     */
+    std::int32_t getStatus() {
+        return m_onlineUserInfo.u_status;
     }
 private:
     ChatSession(const ChatSession &obj) = delete;

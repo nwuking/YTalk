@@ -44,11 +44,12 @@ void Session::sendPackage(const void *msg, int length) {
     std::string compressMsg = srcMsg;
     std::string package;
     PackageHead head;
-    head.ph_compress = '0';
+    head.ph_compress = 0;
     head.ph_compress_size = compressMsg.size();
     head.ph_src_size = length;
+    bzero(head.reserved, 16);
     package.append(reinterpret_cast<const char*>(&head), sizeof head);
-    package += srcMsg;
+    package.append(srcMsg);
 
     if(m_connection.expired()) {
         LOG_ERROR("Fail to send package, TcpConnection is destroyed");

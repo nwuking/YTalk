@@ -105,6 +105,7 @@ void ChatSession::onRead(const std::shared_ptr<netlib::TcpConnection> &conn, Buf
         }
 
         m_lastPakcageTime = time(nullptr);
+        LOG_INFO("The lasr package time: %d", m_lastPakcageTime);
     }
 }
 
@@ -150,7 +151,7 @@ void ChatSession::sendWhenFriendStatusChange(std::int32_t f_id, int type, int st
 int ChatSession::handleData(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &inBuf) {
     BinaryStreamReader reader(inBuf.data(), inBuf.size());
     DataHead dh;
-    bzero(&dh, sizeof(DataHead));
+    //bzero(&dh, sizeof(DataHead));
     if(!reader.ReadInt32(dh.dh_msgOrder)) {
         LOG_ERROR("Fail to read MSG_ORDER from client:%s", conn->peerAddress().toIpPort().c_str());
         return 1;
@@ -321,21 +322,21 @@ void ChatSession::toRegister(const std::shared_ptr<netlib::TcpConnection> &conn,
                             "\"code\": 0, "
                             "\"msg\": \"ok\""
                         "}";
+            response = "{\"code\": 0, \"msg\": \"ok\"}";
         }
     }
-LOG_INFO("qwe");
     std::string rspMsg;
     // 插入DataHead,构造完整的data
     BinaryStreamWriter writer(&rspMsg);
     writer.WriteInt32(MSG_ORDER_REGISTER);
     writer.WriteInt32(m_seq);
+    writer.WriteCString(response.data(), response.size());
     writer.Flush();
     
-    rspMsg += response;
-LOG_INFO("qwe1");
+    //rspMsg.append(response);
     send(rspMsg);
-    LOG_INFO("qwe2");
-    LOG_INFO("Response 2 client:%s, MsgOrder: register, data:%s", conn->peerAddress().toIpPort().c_str(), response.c_str());
+    int p = m_seq;
+    LOG_INFO("Response 2 client:%s, MsgOrder: register, data:%s, size=%d, seq=%d", conn->peerAddress().toIpPort().c_str(), rspMsg.c_str(), rspMsg.size(), p);
 }
 
 void ChatSession::toLogin(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data) {
@@ -371,7 +372,7 @@ void ChatSession::toLogin(const std::shared_ptr<netlib::TcpConnection> &conn, co
 
     // 先判断该账号有没有注册
     User user;
-    bzero(&user, sizeof(User));
+    //bzero(&user, sizeof(User));
     user.u_name = d["u_name"].GetString();
     Singleton<UserManager>::getInstance().getUserByUserName(user.u_name, user);
     if(user.u_id == 0) {
@@ -396,7 +397,7 @@ void ChatSession::toLogin(const std::shared_ptr<netlib::TcpConnection> &conn, co
             if(clashSession) {
                 // 存在冲突的session，踢人下线
                 DataHead dh;
-                bzero(&dh, sizeof(DataHead));
+                //bzero(&dh, sizeof(DataHead));
                 dh.dh_msgOrder = MSG_ORDER_KICK;
                 dh.dh_seq = clashSession->getSeq();
                 std::string temp;
@@ -419,7 +420,7 @@ void ChatSession::toLogin(const std::shared_ptr<netlib::TcpConnection> &conn, co
                             "\"u_id\": " + std::to_string(user.u_id) + ", "
                             "\"u_name\": \"" + user.u_name + "\", "
                             "\"u_nickname\": \"" + user.u_nickname + "\", "
-                            "\"u_gender\": \"" + user.u_gender + "\", "
+                            "\"u_gender\": " + user.u_gender + ", "
                             "\"u_birthday\": " + std::to_string(user.u_birthday) + ", "
                             "\"u_signature\": \"" + user.u_signature + "\", "
                             "\"u_faceType\": " + std::to_string(user.u_faceType) + ", "
@@ -434,7 +435,7 @@ void ChatSession::toLogin(const std::shared_ptr<netlib::TcpConnection> &conn, co
     // 回复用户的登录情况
     std::string rspData;
     DataHead dataH;
-    bzero(&dataH, sizeof(DataHead));
+    //bzero(&dataH, sizeof(DataHead));
     dataH.dh_msgOrder = MSG_ORDER_LOGIN;
     dataH.dh_seq = m_seq;
     rspData.append(reinterpret_cast<char*>(&dataH), sizeof(dataH));
@@ -1426,7 +1427,95 @@ void ChatSession::toChangeFriendRemarks(const std::shared_ptr<netlib::TcpConnect
 }
 
 void ChatSession::toGetFriendsList(const std::shared_ptr<TcpConnection> &conn, const std::string &data) {
-    //TODO
+/**
+ * @brief 获取好友列表，data为空
+ *   
+ */
+    // 首先从数据库中获取好友分组信息
+    std::string teamsJson;
+    if( Singleton<UserManager>::getInstance().getTeamsByUserId(m_onlineUserInfo.u_id, teamsJson)) {
+        LOG_ERROR("Fail to get Teams from user=%d", m_onlineUserInfo.u_id);
+        return;
+    }
+    if(teamsJson.empty()) {
+        teamsJson = "["
+                        "{"
+                            "\"teamname\": \"myFriends\", "
+                            "\"members\": []"
+                        "}"
+                    "]";
+    }
+
+    rapidjson::Document document;
+    if(document.Parse(teamsJson.data()).HasParseError() || !document.IsArray()) {
+        LOG_ERROR("Internal error, fail to parse json:%s", teamsJson.c_str());
+        return;
+    }
+    rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
+
+    User user;  
+    User f_user;
+    Singleton<UserManager>::getInstance().getUserByUserId(m_onlineUserInfo.u_id, user);
+    for(auto &f : user.u_friends) {
+        for(auto &team : document.GetArray()) {
+            // 每个team是一个object
+            if(!team.HasMember("members")) {
+                rapidjson::Value value(rapidjson::kArrayType);
+                team.AddMember("members", value, allocator);
+            }
+            if(team["teamname"].GetString() != f.f_team) {
+                continue;
+            }
+
+            // 获取好友用户信息
+            if(Singleton<UserManager>::getInstance().getUserByUserId(f.f_id, f_user)) {
+                continue;
+            }
+
+            // 填充好友的详细信息
+            rapidjson::Value value(rapidjson::kObjectType);
+            value.AddMember("u_id", f_user.u_id, allocator);
+            rapidjson::Value name(f_user.u_name.c_str(), f_user.u_name.size());
+            value.AddMember("u_name", name, allocator);
+            rapidjson::Value nickname(f_user.u_nickname.c_str(), f_user.u_nickname.size());
+            value.AddMember("u_nickname", nickname, allocator);
+            value.AddMember("u_faceType", f_user.u_faceType, allocator);
+            rapidjson::Value face(f_user.u_face.c_str(), f_user.u_face.size());
+            value.AddMember("u_face", face, allocator);
+            rapidjson::Value gender(f_user.u_gender.c_str(), f_user.u_gender.size());
+            value.AddMember("u_gender", gender, allocator);
+            rapidjson::Value signature(f_user.u_signature.c_str(), f_user.u_signature.size());
+            value.AddMember("u_signature", signature, allocator);
+            rapidjson::Value remarks(f.f_remarks.c_str(), f.f_remarks.size());
+            value.AddMember("remarks", remarks, allocator);
+            std::int32_t cType = Singleton<ChatService>::getInstance().getClientTypeByUserId(f_user.u_id);
+            value.AddMember("clienttype", cType, allocator);
+            std::int32_t status = Singleton<ChatService>::getInstance().getStatusByUserId(f_user.u_id);
+            value.AddMember("status", status, allocator);
+
+            team["members"].PushBack(value, allocator);
+            break;
+        }
+    }
+
+    // 将数据返回给客户端
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> pWriter(buffer);
+    document.Accept(pWriter);
+    if(buffer.GetString()) {
+        std::string temp(buffer.GetString(), buffer.GetSize());
+        teamsJson = temp;
+    }
+    std::ostringstream resJson;
+    resJson << "{\"code\": 0, \"msg\": \"ok\", \"userinfo\": " << teamsJson << "}";
+    DataHead dh;
+    dh.dh_msgOrder = MSG_ORDER_GET_FRIENDS_LIST;
+    dh.dh_seq = m_seq;
+    std::string response(reinterpret_cast<char*>(&dh), sizeof(DataHead));
+    response += resJson.str();
+    send(response);
+
+    LOG_INFO("Response to client:%s, MsgOrder:GET_FRIENDS_LIST, data:%s", resJson.str().c_str());
 }
 
 void ChatSession::toGetGroupMember(const std::shared_ptr<TcpConnection> &conn, const std::string &data) {

@@ -64,8 +64,9 @@ enum MsgOrder {
 typedef struct DataHead {
     std::int32_t            dh_msgOrder;                    // 消息指令
     std::int32_t            dh_seq;
-    char                    dh_reserve[32];                 // 预留空间，
+    //char                    dh_reserve[32];                 // 预留空间，
 } DataHead;
+
 
 }   // IMServer
 
