@@ -69,8 +69,6 @@ void ChatSession::onRead(const std::shared_ptr<netlib::TcpConnection> &conn, Buf
         
         std::string inBuf;
 
-        LOG_INFO("TEST %d, %d", head.ph_compress_size, head.ph_src_size);
-
         if(head.ph_compress_size < 0 || head.ph_compress_size > MAX_PACKAGE_SIZE || head.ph_src_size < 0 || head.ph_src_size > MAX_PACKAGE_SIZE) {
             //包头错误， 服务端主动关闭连接
             conn->forceClose();
@@ -163,7 +161,7 @@ int ChatSession::handleData(const std::shared_ptr<netlib::TcpConnection> &conn, 
     
     if(dh.dh_msgOrder <= MSG_ORDER_UNKNOW || dh.dh_msgOrder >= MSG_ORDER_ERROR) {
         // 指令错误
-        LOG_INFO("Msg order error from client:%s", conn->peerAddress().toIpPort().c_str());
+        LOG_INFO("Msg order:%d error from client:%s", dh.dh_msgOrder, conn->peerAddress().toIpPort().c_str());
         return 2;
     }
     m_seq = dh.dh_seq;
@@ -322,7 +320,7 @@ void ChatSession::toRegister(const std::shared_ptr<netlib::TcpConnection> &conn,
                             "\"code\": 0, "
                             "\"msg\": \"ok\""
                         "}";
-            response = "{\"code\": 0, \"msg\": \"ok\"}";
+            //response = "{\"code\": 0, \"msg\": \"ok\"}";
         }
     }
     std::string rspMsg;
@@ -433,16 +431,25 @@ void ChatSession::toLogin(const std::shared_ptr<netlib::TcpConnection> &conn, co
     }
 
     // 回复用户的登录情况
-    std::string rspData;
+    /*std::string rspData;
     DataHead dataH;
     //bzero(&dataH, sizeof(DataHead));
     dataH.dh_msgOrder = MSG_ORDER_LOGIN;
     dataH.dh_seq = m_seq;
     rspData.append(reinterpret_cast<char*>(&dataH), sizeof(dataH));
-    rspData += response;
-    send(rspData);
+    rspData += response;*/
+
+    std::string rspMsg;
+    // 插入DataHead,构造完整的data
+    BinaryStreamWriter writer(&rspMsg);
+    writer.WriteInt32(MSG_ORDER_LOGIN);
+    writer.WriteInt32(m_seq);
+    writer.WriteCString(response.data(), response.size());
+    writer.Flush();
+
+    send(rspMsg);
     
-    LOG_INFO("Response login to client:%s", conn->peerAddress().toIpPort().c_str());
+    LOG_INFO("Response login to client:%s, data=%s, size=%d", conn->peerAddress().toIpPort().c_str(), response.c_str(), response.size());
 
     if(m_isLogin) { // 登录成功才会走这里
         //TODO： 推送离线聊天消息
@@ -484,7 +491,17 @@ void ChatSession::toHeartBeat(const std::shared_ptr<netlib::TcpConnection> &conn
     dh.dh_msgOrder = MSG_ORDER_HEARTBEAT;
     dh.dh_seq = m_seq;
 
-    std::string data(reinterpret_cast<char*>(&dh), sizeof(DataHead));
+    std::string rspMsg;
+    // 插入DataHead,构造完整的data
+    BinaryStreamWriter writer(&rspMsg);
+    writer.WriteInt32(MSG_ORDER_HEARTBEAT);
+    writer.WriteInt32(m_seq);
+    //writer.WriteCString(resJson.str().data(), resJson.str().size());
+    writer.Flush();
+
+    send(rspMsg);
+
+    //std::string data(reinterpret_cast<char*>(&dh), sizeof(DataHead));
 }
 
 void ChatSession::toFindFriend(const std::shared_ptr<netlib::TcpConnection> &conn, const std::string &data) {
@@ -1508,12 +1525,21 @@ void ChatSession::toGetFriendsList(const std::shared_ptr<TcpConnection> &conn, c
     }
     std::ostringstream resJson;
     resJson << "{\"code\": 0, \"msg\": \"ok\", \"userinfo\": " << teamsJson << "}";
-    DataHead dh;
+    /*DataHead dh;
     dh.dh_msgOrder = MSG_ORDER_GET_FRIENDS_LIST;
     dh.dh_seq = m_seq;
     std::string response(reinterpret_cast<char*>(&dh), sizeof(DataHead));
-    response += resJson.str();
-    send(response);
+    response += resJson.str();*/
+
+    std::string rspMsg;
+    // 插入DataHead,构造完整的data
+    BinaryStreamWriter writer(&rspMsg);
+    writer.WriteInt32(MSG_ORDER_GET_FRIENDS_LIST);
+    writer.WriteInt32(m_seq);
+    writer.WriteCString(resJson.str().data(), resJson.str().size());
+    writer.Flush();
+
+    send(rspMsg);
 
     LOG_INFO("Response to client:%s, MsgOrder:GET_FRIENDS_LIST, data:%s", resJson.str().c_str());
 }

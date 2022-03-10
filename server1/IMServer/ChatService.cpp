@@ -54,8 +54,6 @@ void ChatService::onConnected(std::shared_ptr<TcpConnection> conn) {
         std::shared_ptr<ChatSession> newSession(new ChatSession(conn, m_sessionId));
         conn->setMessageCallBack(std::bind(&ChatSession::onRead, newSession.get(), _1, _2, _3));
         m_sessions.push_back(newSession);
-
-        printf("1");
     }
     else {
         // 断开
